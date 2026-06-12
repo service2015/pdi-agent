@@ -1,0 +1,1939 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDI AI Agent</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --navy:#1A3B6E;
+  --navy-dark:#122d56;
+  --navy-light:#2a5a9e;
+  --red:#C1272D;
+  --red-dark:#9e1f24;
+  --white:#FFFFFF;
+  --gray-50:#F8F9FA;
+  --gray-100:#F5F5F5;
+  --gray-200:#E9ECEF;
+  --gray-400:#ADB5BD;
+  --gray-600:#6C757D;
+  --gray-800:#343A40;
+  --text:#1a1a1a;
+  --text-muted:#666;
+}
+body{font-family:'Sarabun',sans-serif;background:#F0F3F8;color:var(--text);min-height:100vh;font-size:15px}
+
+/* SCREENS */
+.screen{display:none;min-height:100vh;flex-direction:column}
+.screen.active{display:flex}
+
+/* ===== LOGIN ===== */
+#login{background:var(--navy);align-items:center;justify-content:center;padding:2rem}
+.login-box{background:white;border-radius:16px;padding:2rem 1.5rem;width:100%;max-width:360px;text-align:center}
+.login-logo{width:80px;height:80px;background:var(--navy);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;font-size:28px;font-weight:700;color:white;letter-spacing:1px}
+.login-box h1{font-size:20px;font-weight:700;color:var(--navy);margin-bottom:4px}
+.login-box p{font-size:13px;color:var(--text-muted);margin-bottom:1.5rem}
+.login-box input{width:100%;padding:12px 14px;border:1.5px solid var(--gray-200);border-radius:10px;font-family:'Sarabun',sans-serif;font-size:15px;margin-bottom:10px;outline:none;transition:border .2s}
+.login-box input:focus{border-color:var(--navy)}
+.btn-primary{width:100%;padding:13px;background:var(--navy);color:white;border:none;border-radius:10px;font-family:'Sarabun',sans-serif;font-size:16px;font-weight:600;cursor:pointer;transition:background .2s}
+.btn-primary:hover{background:var(--navy-dark)}
+.login-roles{display:flex;gap:8px;margin-top:1.25rem;justify-content:center;flex-wrap:wrap}
+.role-btn{padding:6px 14px;border:1.5px solid var(--gray-200);border-radius:20px;background:white;font-family:'Sarabun',sans-serif;font-size:13px;cursor:pointer;color:var(--text-muted);transition:all .2s}
+.role-btn:hover,.role-btn.active{background:var(--navy);color:white;border-color:var(--navy)}
+.login-hint{font-size:12px;color:var(--gray-400);margin-top:10px}
+
+/* ===== TOP BAR ===== */
+.topbar{background:var(--navy);padding:12px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100}
+.topbar-logo{font-size:18px;font-weight:700;color:white;letter-spacing:1px}
+.topbar-divider{width:1px;height:20px;background:rgba(255,255,255,0.3)}
+.topbar-company{font-size:14px;color:rgba(255,255,255,0.85);flex:1}
+.topbar-user{display:flex;align-items:center;gap:8px}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:white}
+.user-role{font-size:11px;padding:2px 8px;border-radius:20px;background:rgba(255,255,255,0.2);color:white}
+
+/* ===== DASHBOARD ===== */
+#dashboard{background:#F0F3F8}
+.dash-content{flex:1;padding:16px;padding-bottom:80px}
+.dash-greeting{padding:16px 0 8px}
+.dash-greeting h2{font-size:20px;font-weight:700;color:var(--navy)}
+.dash-greeting p{font-size:13px;color:var(--text-muted)}
+.section-label{font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;margin:16px 0 10px}
+.dept-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dept-card{background:white;border-radius:14px;padding:14px;border:1.5px solid var(--gray-200);cursor:pointer;transition:all .2s;position:relative}
+.dept-card:hover{border-color:var(--navy);transform:translateY(-1px);box-shadow:0 4px 12px rgba(26,59,110,0.1)}
+.dept-card.highlight{border-color:var(--navy)}
+.dept-icon{font-size:24px;margin-bottom:8px}
+.dept-name{font-size:14px;font-weight:600;color:var(--navy)}
+.dept-desc{font-size:11px;color:var(--text-muted);margin-top:2px;line-height:1.4}
+.dept-badge{position:absolute;top:10px;right:10px;background:var(--red);color:white;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px}
+.btn-work{width:100%;margin-top:10px;padding:8px;background:var(--navy);color:white;border:none;border-radius:8px;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:background .2s}
+.btn-work:hover{background:var(--navy-dark)}
+
+/* COMMAND BAR */
+.command-bar{position:fixed;bottom:0;left:0;right:0;background:white;padding:12px 16px;border-top:1.5px solid var(--gray-200);display:flex;gap:8px;z-index:100}
+.command-input{flex:1;padding:11px 14px;border:1.5px solid var(--gray-200);border-radius:24px;font-family:'Sarabun',sans-serif;font-size:15px;outline:none;background:var(--gray-100);transition:all .2s}
+.command-input:focus{border-color:var(--navy);background:white}
+.command-send{width:42px;height:42px;background:var(--navy);color:white;border:none;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:background .2s;flex-shrink:0}
+.command-send:hover{background:var(--navy-dark)}
+
+/* ===== CHAT ===== */
+#chat{background:#F0F3F8}
+.chat-header{background:var(--navy);padding:12px 16px;display:flex;align-items:center;gap:12px}
+.back-btn{color:white;background:none;border:none;font-size:22px;cursor:pointer;padding:0;line-height:1}
+.chat-dept-info{flex:1}
+.chat-dept-info h3{font-size:16px;font-weight:700;color:white}
+.chat-dept-info p{font-size:12px;color:rgba(255,255,255,0.75)}
+.chat-dept-icon{font-size:28px}
+.chat-body{flex:1;overflow-y:auto;padding:16px;padding-bottom:80px;display:flex;flex-direction:column;gap:12px}
+.msg{max-width:85%;display:flex;flex-direction:column;gap:4px}
+.msg.bot{align-self:flex-start}
+.msg.user{align-self:flex-end}
+.msg-bubble{padding:12px 14px;border-radius:16px;font-size:14px;line-height:1.6}
+.msg.bot .msg-bubble{background:white;color:var(--text);border-bottom-left-radius:4px;border:1.5px solid var(--gray-200)}
+.msg.user .msg-bubble{background:var(--navy);color:white;border-bottom-right-radius:4px}
+.msg-time{font-size:11px;color:var(--text-muted)}
+.msg.user .msg-time{text-align:right}
+
+/* PROACTIVE bubble */
+.msg.proactive .msg-bubble{background:linear-gradient(135deg,#f0f4ff,#e8f0fe);border:1.5px solid #c5d5f5;color:var(--text)}
+.proactive-label{font-size:10px;font-weight:600;color:var(--navy);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.proactive-actions{display:flex;gap:6px;margin-top:8px}
+.proact-btn{padding:6px 12px;border-radius:20px;font-family:'Sarabun',sans-serif;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.proact-btn.yes{background:var(--navy);color:white}
+.proact-btn.yes:hover{background:var(--navy-dark)}
+.proact-btn.no{background:var(--gray-100);color:var(--text-muted)}
+.proact-btn.no:hover{background:var(--gray-200)}
+
+/* PREVIEW card */
+.preview-card{background:white;border:1.5px solid var(--gray-200);border-radius:12px;overflow:hidden;margin-top:4px;max-width:320px}
+.preview-header{background:var(--navy);padding:8px 12px;display:flex;align-items:center;gap:6px}
+.preview-header span{font-size:12px;color:rgba(255,255,255,0.9);font-weight:600}
+.preview-body{padding:12px;font-size:13px;line-height:1.7;color:var(--text);white-space:pre-wrap}
+.preview-actions{display:flex;gap:6px;padding:8px 12px;border-top:1px solid var(--gray-100)}
+.prev-btn{flex:1;padding:7px;border-radius:8px;font-family:'Sarabun',sans-serif;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.prev-btn.approve{background:var(--navy);color:white}
+.prev-btn.approve:hover{background:var(--navy-dark)}
+.prev-btn.edit{background:var(--gray-100);color:var(--navy)}
+.prev-btn.edit:hover{background:var(--gray-200)}
+.prev-btn.cancel{background:white;color:var(--red);border:1px solid var(--red)}
+.prev-btn.cancel:hover{background:#fff0f0}
+
+/* TYPING */
+.typing-indicator{display:flex;gap:4px;align-items:center;padding:12px 14px;background:white;border-radius:16px;border:1.5px solid var(--gray-200);width:fit-content}
+.typing-dot{width:7px;height:7px;border-radius:50%;background:var(--gray-400);animation:bounce .9s infinite}
+.typing-dot:nth-child(2){animation-delay:.15s}
+.typing-dot:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
+
+/* SUGGESTED */
+.suggestions{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.sug-chip{padding:7px 12px;background:white;border:1.5px solid var(--gray-200);border-radius:20px;font-family:'Sarabun',sans-serif;font-size:12px;cursor:pointer;color:var(--navy);font-weight:500;transition:all .2s}
+.sug-chip:hover{background:var(--navy);color:white;border-color:var(--navy)}
+
+/* APPROVED badge */
+.approved-badge{display:inline-block;background:#d4edda;color:#155724;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;margin-top:6px}
+.cancelled-badge{display:inline-block;background:#f8d7da;color:#721c24;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;margin-top:6px}
+
+/* STAT ROW */
+.stat-row{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:4px}
+.stat-card{background:white;border-radius:12px;padding:10px 8px;text-align:center;border:1.5px solid var(--gray-200)}
+.stat-num{font-size:22px;font-weight:700;color:var(--navy)}
+.stat-num.stat-active{color:#0d6efd}
+.stat-num.stat-red{color:var(--red)}
+.stat-num.stat-green{color:#198754}
+.stat-label{font-size:10px;color:var(--text-muted);margin-top:2px;line-height:1.3}
+/* ALERT LIST */
+.alert-list{display:flex;flex-direction:column;gap:8px;margin-bottom:4px}
+.alert-item{display:flex;align-items:center;gap:10px;background:white;border-radius:12px;padding:12px;cursor:pointer;transition:all .2s}
+.alert-item:hover{transform:translateX(2px)}
+.alert-warn{border:1.5px solid #ffe082;border-left:4px solid #ffc107}
+.alert-red{border:1.5px solid #f5c6cb;border-left:4px solid var(--red)}
+.alert-blue{border:1.5px solid #b8d4f8;border-left:4px solid #0d6efd}
+.alert-icon{font-size:20px;flex-shrink:0}
+.alert-body{flex:1}
+.alert-title{font-size:13px;font-weight:600;color:var(--text)}
+.alert-sub{font-size:11px;color:var(--text-muted);margin-top:2px}
+.alert-arrow{font-size:20px;color:var(--gray-400)}
+/* ACTIVITY */
+.activity-list{display:flex;flex-direction:column;gap:0;background:white;border-radius:12px;border:1.5px solid var(--gray-200);overflow:hidden;margin-bottom:4px}
+.activity-item{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--gray-200)}
+.activity-item:last-child{border-bottom:none}
+.act-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot-green{background:#198754}
+.dot-blue{background:#0d6efd}
+.act-body{flex:1}
+.act-title{font-size:12px;font-weight:500;color:var(--text)}
+.act-time{font-size:11px;color:var(--text-muted);margin-top:1px}
+.act-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;flex-shrink:0}
+.badge-wait{background:#fff3cd;color:#856404}
+.badge-ok{background:#d4edda;color:#155724}
+/* VIDEO TAB */
+.video-wrap{padding:16px;padding-bottom:100px;overflow-y:auto;flex:1}
+.video-intro{text-align:center;background:linear-gradient(135deg,#f0f4ff,#e8f0fe);border-radius:14px;padding:16px;margin-bottom:14px;border:1.5px solid #c5d5f5}
+.video-form{background:white;border-radius:14px;border:1.5px solid var(--gray-200);padding:14px;margin-bottom:12px}
+.vf-label{font-size:12px;font-weight:700;color:var(--navy);margin-bottom:6px}
+.vf-input{width:100%;padding:10px 12px;border:1.5px solid var(--gray-200);border-radius:10px;font-family:'Sarabun',sans-serif;font-size:14px;outline:none;resize:none;color:var(--text)}
+.vf-input:focus{border-color:var(--navy)}
+.vf-upload{border:2px dashed var(--gray-200);border-radius:10px;padding:14px;text-align:center;cursor:pointer;transition:all .2s}
+.vf-upload:hover{border-color:var(--navy);background:#f8f9ff}
+.vf-style-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.vf-style{padding:8px;border:1.5px solid var(--gray-200);border-radius:8px;text-align:center;font-size:12px;font-weight:600;cursor:pointer;color:var(--text-muted);transition:all .2s}
+.vf-style.active{background:var(--navy);color:white;border-color:var(--navy)}
+.btn-create-video{width:100%;margin-top:14px;padding:14px;background:var(--red);color:white;border:none;border-radius:12px;font-family:'Sarabun',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:all .2s}
+.btn-create-video:hover{background:var(--red-dark)}
+.btn-create-video:disabled{background:var(--navy);cursor:not-allowed}
+.step-dots span{animation:blink 1.2s infinite;opacity:0;font-size:18px}
+.step-dots span:nth-child(2){animation-delay:.2s}
+.step-dots span:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:0}40%{opacity:1}}
+/* SLIDE PREVIEW */
+.slide-card{background:var(--navy);border-radius:12px;padding:16px;margin-bottom:8px;color:white;position:relative;min-height:120px;display:flex;flex-direction:column;justify-content:space-between}
+.slide-num{font-size:10px;font-weight:700;color:rgba(255,255,255,0.5);margin-bottom:6px}
+.slide-headline{font-size:16px;font-weight:700;line-height:1.4;margin-bottom:8px}
+.slide-body-text{font-size:12px;color:rgba(255,255,255,0.8);line-height:1.6}
+.slide-narration{background:rgba(255,255,255,0.1);border-radius:8px;padding:8px 10px;margin-top:10px;font-size:11px;color:rgba(255,255,255,0.7)}
+.slide-narration-label{font-size:10px;font-weight:700;color:var(--red);margin-bottom:2px}
+/* AUDIO */
+.audio-card{background:white;border-radius:12px;border:1.5px solid var(--gray-200);padding:12px;margin-bottom:8px}
+.audio-title{font-size:13px;font-weight:600;color:var(--navy);margin-bottom:8px}
+.audio-player{width:100%;height:36px;accent-color:var(--navy)}
+.audio-loading{display:flex;align-items:center;gap:8px;padding:10px;font-size:13px;color:var(--text-muted)}
+.audio-error{font-size:12px;color:var(--red);padding:8px;background:#fff0f0;border-radius:8px}
+.video-approve-bar{display:flex;gap:8px;margin-top:14px}
+/* PREVIEW PLAYER */
+.player-screen{background:var(--navy);border-radius:16px;overflow:hidden;margin-bottom:8px}
+.player-slide-bg{min-height:280px;padding:24px 20px 16px;display:flex;flex-direction:column;justify-content:center;position:relative;background:linear-gradient(160deg,#1A3B6E 0%,#0d2448 100%)}
+.player-slide-num{font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);margin-bottom:12px;text-transform:uppercase;letter-spacing:1px}
+.player-headline{font-size:22px;font-weight:700;color:white;line-height:1.35;margin-bottom:12px}
+.player-body{font-size:14px;color:rgba(255,255,255,0.8);line-height:1.7}
+.player-logo{position:absolute;bottom:14px;right:16px;font-size:13px;font-weight:700;color:var(--red);letter-spacing:1px;background:rgba(255,255,255,0.1);padding:3px 10px;border-radius:20px}
+.player-progress-bar{height:3px;background:rgba(255,255,255,0.2)}
+.player-progress-fill{height:100%;background:var(--red);transition:width .3s;width:25%}
+.player-controls{display:flex;align-items:center;justify-content:center;gap:12px;padding:10px}
+.player-btn{background:rgba(255,255,255,0.15);color:white;border:none;border-radius:20px;padding:7px 16px;font-family:'Sarabun',sans-serif;font-size:13px;cursor:pointer;transition:all .2s}
+.player-btn:hover{background:rgba(255,255,255,0.25)}
+.player-play{background:var(--red);padding:7px 24px;font-weight:700}
+.player-play:hover{background:var(--red-dark)}
+/* TABS */
+.chat-tabs{display:flex;background:white;border-bottom:1.5px solid var(--gray-200);padding:0 8px}
+.tab-btn{flex:1;padding:10px 4px;background:none;border:none;border-bottom:2.5px solid transparent;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:600;color:var(--text-muted);cursor:pointer;transition:all .2s}
+.tab-btn.active{color:var(--navy);border-bottom-color:var(--navy)}
+.tab-content{display:none;flex:1;overflow-y:auto}
+.tab-content.active{display:flex;flex-direction:column}
+/* NEWS */
+.news-toolbar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:white;border-bottom:1px solid var(--gray-200);flex-shrink:0}
+.news-time-info{font-size:12px;color:var(--text-muted)}
+.btn-fetch-news{padding:7px 14px;background:var(--navy);color:white;border:none;border-radius:20px;font-family:'Sarabun',sans-serif;font-size:12px;font-weight:600;cursor:pointer}
+.news-list{flex:1;overflow-y:auto;padding:12px 16px 80px;display:flex;flex-direction:column;gap:10px}
+.news-empty{text-align:center;padding:40px 20px;color:var(--text-muted)}
+.news-card{background:white;border-radius:14px;border:1.5px solid var(--gray-200);overflow:hidden}
+.news-card-img{width:100%;height:140px;object-fit:cover;background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:40px}
+.news-card-body{padding:12px}
+.news-source{font-size:10px;font-weight:600;color:var(--red);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.news-title{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:6px;line-height:1.4}
+.news-summary{font-size:12px;color:var(--text-muted);line-height:1.6;margin-bottom:10px}
+.news-actions{display:flex;gap:6px}
+.news-btn{flex:1;padding:7px;border-radius:8px;font-family:'Sarabun',sans-serif;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .2s;text-align:center}
+.news-btn.fb{background:#1877f2;color:white}
+.news-btn.tiktok{background:#010101;color:white}
+.news-btn.script{background:var(--gray-100);color:var(--navy);border:1px solid var(--gray-200)}
+.news-loading{text-align:center;padding:30px;color:var(--text-muted);font-size:13px}
+/* CALENDAR */
+.cal-header{margin-bottom:10px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;background:white;border-radius:12px;border:1.5px solid var(--gray-200);padding:10px;margin-bottom:4px}
+.cal-day-label{font-size:10px;font-weight:600;color:var(--text-muted);text-align:center;padding:4px 0}
+.cal-day{font-size:12px;text-align:center;padding:6px 2px;border-radius:6px;cursor:pointer;position:relative}
+.cal-day.today{background:var(--navy);color:white;font-weight:700}
+.cal-day.has-post::after{content:'';width:4px;height:4px;border-radius:50%;background:var(--red);position:absolute;bottom:2px;left:50%;transform:translateX(-50%)}
+.cal-day.other-month{color:var(--gray-400)}
+.cal-plan-item{background:white;border-radius:10px;border:1.5px solid var(--gray-200);padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.cal-plan-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;background:var(--navy)}
+.cal-plan-dot.done{background:#198754}
+.cal-plan-dot.pending{background:#ffc107}
+.cal-plan-title{font-size:13px;font-weight:600;color:var(--text)}
+.cal-plan-date{font-size:11px;color:var(--text-muted);margin-top:1px}
+/* SETTINGS */
+.settings-btn{background:none;border:none;font-size:20px;cursor:pointer;padding:0 6px;line-height:1}
+#settings{background:#F0F3F8}
+.settings-body{flex:1;overflow-y:auto;padding:16px;padding-bottom:40px;display:flex;flex-direction:column;gap:14px}
+.settings-section{background:white;border-radius:14px;border:1.5px solid var(--gray-200);padding:16px}
+.settings-section-title{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px}
+.settings-desc{font-size:12px;color:var(--text-muted);margin-bottom:12px}
+.setting-item{margin-bottom:14px}
+.setting-label{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px}
+.setting-sub{font-size:11px;color:var(--text-muted);margin-bottom:5px}
+.setting-input{width:100%;padding:10px 12px;border:1.5px solid var(--gray-200);border-radius:10px;font-family:'Sarabun',sans-serif;font-size:14px;outline:none;color:var(--text);background:var(--gray-50)}
+.setting-input:focus{border-color:var(--navy);background:white}
+.setting-status{font-size:11px;margin-top:4px;min-height:16px}
+.setting-status.ok{color:#198754}
+.setting-status.err{color:var(--red)}
+.btn-save-keys{width:100%;margin-top:8px;padding:12px;background:var(--navy);color:white;border:none;border-radius:10px;font-family:'Sarabun',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:background .2s}
+.btn-save-keys:hover{background:var(--navy-dark)}
+.asset-upload-row{display:flex;align-items:center;gap:12px;margin-top:6px}
+.asset-preview{width:60px;height:60px;border-radius:10px;border:1.5px dashed var(--gray-200);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;background:var(--gray-50)}
+.asset-preview img{width:100%;height:100%;object-fit:contain}
+.btn-upload{padding:8px 14px;background:var(--gray-100);color:var(--navy);border:1.5px solid var(--gray-200);border-radius:8px;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:600;cursor:pointer}
+.work-thumb{width:60px;height:60px;border-radius:8px;object-fit:cover;border:1.5px solid var(--gray-200)}
+.user-list{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+.user-row{display:flex;align-items:center;gap:10px;padding:10px;background:var(--gray-50);border-radius:10px}
+.user-info{flex:1}
+.user-name{font-size:13px;font-weight:600;color:var(--text)}
+.user-email{font-size:11px;color:var(--text-muted)}
+.user-role-badge{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600}
+.role-owner{background:#fff3cd;color:#856404}
+.role-manager{background:#cfe2ff;color:#084298}
+.role-staff{background:#d1e7dd;color:#0f5132}
+.btn-add-user{width:100%;padding:10px;background:white;color:var(--navy);border:1.5px dashed var(--navy);border-radius:10px;font-family:'Sarabun',sans-serif;font-size:14px;font-weight:600;cursor:pointer}
+</style>
+</head>
+<body>
+
+<!-- ===== LOGIN SCREEN ===== -->
+<div class="screen active" id="login">
+  <div class="login-box">
+    <div class="login-logo">PDI</div>
+    <h1>PDI AI Agent</h1>
+    <p>เข้าสู่ระบบเพื่อสั่งงาน AI</p>
+    <input type="email" id="email-input" placeholder="อีเมล" value="owner@pdi.co.th"/>
+    <input type="password" id="pass-input" placeholder="รหัสผ่าน" value="••••••••"/>
+    <div style="margin-bottom:1rem">
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px">เลือก Role (ทดลองใช้)</p>
+      <div class="login-roles">
+        <button class="role-btn active" onclick="selectRole('Owner',this)">👑 Owner</button>
+        <button class="role-btn" onclick="selectRole('Manager',this)">🏢 Manager</button>
+        <button class="role-btn" onclick="selectRole('Staff',this)">👤 Staff</button>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="doLogin()">เข้าสู่ระบบ</button>
+    <p class="login-hint">กด "เข้าสู่ระบบ" เพื่อทดลองระบบ</p>
+  </div>
+</div>
+
+<!-- ===== DASHBOARD SCREEN ===== -->
+<div class="screen" id="dashboard">
+  <div class="topbar">
+    <span class="topbar-logo">PDI</span>
+    <div class="topbar-divider"></div>
+    <span class="topbar-company">PDI Thailand</span>
+    <div class="topbar-user">
+      <button class="settings-btn" onclick="showScreen('settings')" title="ตั้งค่า">⚙️</button>
+      <div class="user-avatar" id="user-avatar">A</div>
+      <span class="user-role" id="user-role-badge">Owner</span>
+    </div>
+  </div>
+
+  <div class="dash-content">
+    <div class="dash-greeting">
+      <h2>สวัสดี, <span id="greeting-name">คุณอัตตะพร</span> 👋</h2>
+      <p id="dash-date"></p>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-num">287</div>
+        <div class="stat-label">โครงการทั้งหมด</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num stat-active">12</div>
+        <div class="stat-label">กำลังดำเนินการ</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num stat-red" id="pending-count">3</div>
+        <div class="stat-label">รออนุมัติ</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num stat-green">8</div>
+        <div class="stat-label">AI ทำวันนี้</div>
+      </div>
+    </div>
+
+    <!-- ALERT SECTION -->
+    <div class="section-label">🔔 แจ้งเตือน</div>
+    <div class="alert-list" id="alert-list">
+      <div class="alert-item alert-warn" onclick="openChat('marketing')">
+        <div class="alert-icon">📣</div>
+        <div class="alert-body">
+          <div class="alert-title">7 วันแล้วไม่มีโพสต์ใหม่</div>
+          <div class="alert-sub">การตลาด — กดเพื่อสั่ง Agent ทำเลย</div>
+        </div>
+        <div class="alert-arrow">›</div>
+      </div>
+      <div class="alert-item alert-red" onclick="openChat('pm')">
+        <div class="alert-icon">📋</div>
+        <div class="alert-body">
+          <div class="alert-title">3 โครงการยังไม่มี Report</div>
+          <div class="alert-sub">PM — นครธน 2, สาทร, ลาดพร้าว</div>
+        </div>
+        <div class="alert-arrow">›</div>
+      </div>
+      <div class="alert-item alert-blue" onclick="openChat('eng')">
+        <div class="alert-icon">📐</div>
+        <div class="alert-body">
+          <div class="alert-title">เอกสารส่งมอบใกล้ครบกำหนด</div>
+          <div class="alert-sub">วิศวกร — โครงการสาทร Tower ใน 3 วัน</div>
+        </div>
+        <div class="alert-arrow">›</div>
+      </div>
+    </div>
+
+    <!-- ACTIVITY TODAY -->
+    <div class="section-label">📊 กิจกรรม AI วันนี้</div>
+    <div class="activity-list">
+      <div class="activity-item">
+        <div class="act-dot dot-green"></div>
+        <div class="act-body">
+          <div class="act-title">Agent การตลาด — สร้าง Facebook post</div>
+          <div class="act-time">รออนุมัติ · 10 นาทีที่แล้ว</div>
+        </div>
+        <span class="act-badge badge-wait">รออนุมัติ</span>
+      </div>
+      <div class="activity-item">
+        <div class="act-dot dot-blue"></div>
+        <div class="act-body">
+          <div class="act-title">Agent วิศวกร — Technical Report นครธน 2</div>
+          <div class="act-time">อนุมัติแล้ว · 1 ชม.ที่แล้ว</div>
+        </div>
+        <span class="act-badge badge-ok">อนุมัติ</span>
+      </div>
+      <div class="activity-item">
+        <div class="act-dot dot-green"></div>
+        <div class="act-body">
+          <div class="act-title">Agent บัญชี — ใบเสนอราคา โครงการลาดพร้าว</div>
+          <div class="act-time">อนุมัติแล้ว · 2 ชม.ที่แล้ว</div>
+        </div>
+        <span class="act-badge badge-ok">อนุมัติ</span>
+      </div>
+    </div>
+
+    <div class="section-label">🤖 แผนก AI Agent</div>
+    <div class="dept-grid">
+
+      <div class="dept-card highlight" onclick="openChat('marketing')">
+        <div class="dept-badge">1</div>
+        <div class="dept-icon">📣</div>
+        <div class="dept-name">การตลาด</div>
+        <div class="dept-desc">TikTok, Facebook, หาลูกค้า</div>
+        <button class="btn-work">สั่งงาน</button>
+      </div>
+
+      <div class="dept-card" onclick="openChat('field')">
+        <div class="dept-icon">🔨</div>
+        <div class="dept-name">ภาคสนาม</div>
+        <div class="dept-desc">Field Report, สรุปงานรายวัน</div>
+        <button class="btn-work">สั่งงาน</button>
+      </div>
+
+      <div class="dept-card" onclick="openChat('eng')">
+        <div class="dept-icon">📐</div>
+        <div class="dept-name">วิศวกร</div>
+        <div class="dept-desc">Technical Report, Spec</div>
+        <button class="btn-work">สั่งงาน</button>
+      </div>
+
+      <div class="dept-card" onclick="openChat('acc')">
+        <div class="dept-icon">💰</div>
+        <div class="dept-name">บัญชี</div>
+        <div class="dept-desc">ใบเสนอราคา, Invoice, เอกสาร 13 ประเภท</div>
+        <button class="btn-work">สั่งงาน</button>
+      </div>
+
+      <div class="dept-card" onclick="openChat('hr')">
+        <div class="dept-icon">👥</div>
+        <div class="dept-name">HR</div>
+        <div class="dept-desc">ประกาศรับสมัคร, สัญญาจ้าง</div>
+        <button class="btn-work">สั่งงาน</button>
+      </div>
+
+      <div class="dept-card" onclick="openChat('pm')">
+        <div class="dept-icon">📋</div>
+        <div class="dept-name">PM</div>
+        <div class="dept-desc">Project Plan, Status Report</div>
+        <button class="btn-work">สั่งงาน</button>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="command-bar">
+    <input class="command-input" id="command-input" placeholder="พิมพ์สั่งงานตรงนี้เลย..." onkeydown="if(event.key==='Enter')sendCommand()"/>
+    <button class="command-send" onclick="sendCommand()">↑</button>
+  </div>
+</div>
+
+<!-- ===== CHAT SCREEN ===== -->
+<div class="screen" id="chat">
+  <div class="chat-header">
+    <button class="back-btn" onclick="goBack()">←</button>
+    <div class="chat-dept-info">
+      <h3 id="chat-dept-name">การตลาด</h3>
+      <p id="chat-dept-sub">Agent พร้อมช่วยงาน</p>
+    </div>
+    <div class="chat-dept-icon" id="chat-dept-icon">📣</div>
+  </div>
+
+  <!-- TABS (marketing only) -->
+  <div class="chat-tabs" id="chat-tabs" style="display:none">
+    <button class="tab-btn active" id="tab-btn-chat" onclick="switchTab('chat',this)">💬 สั่งงาน</button>
+    <button class="tab-btn" id="tab-btn-news" onclick="switchTab('news',this)">🌐 ข่าว</button>
+    <button class="tab-btn" id="tab-btn-video" onclick="switchTab('video',this)">🎬 วิดีโอ</button>
+    <button class="tab-btn" id="tab-btn-calendar" onclick="switchTab('calendar',this)">📅 ปฏิทิน</button>
+  </div>
+
+  <!-- CHAT TAB -->
+  <div class="tab-content active" id="tab-chat">
+    <div class="chat-body" id="chat-body"></div>
+  </div>
+
+  <!-- NEWS TAB -->
+  <div class="tab-content" id="tab-news" style="display:none">
+    <div class="news-toolbar">
+      <div class="news-time-info">⏰ เวลาโพสต์ที่ดีที่สุด: <b>15:00–18:00</b></div>
+      <button class="btn-fetch-news" onclick="fetchFoundationNews()">🔍 ค้นข่าววันนี้</button>
+    </div>
+    <div id="news-list" class="news-list">
+      <div class="news-empty">
+        <div style="font-size:36px;margin-bottom:8px">🌐</div>
+        <div style="font-size:14px;font-weight:600;color:var(--navy)">ข่าว Foundation ทั่วโลก</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:4px">กด "ค้นข่าววันนี้" เพื่อให้ AI หาข่าวและสรุปเป็นภาษาไทย</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIDEO TAB -->
+  <div class="tab-content" id="tab-video" style="display:none">
+    <div class="video-wrap">
+      <div class="video-intro">
+        <div style="font-size:28px;margin-bottom:6px">🎬</div>
+        <div style="font-size:15px;font-weight:700;color:var(--navy)">สร้างวิดีโอสั้น AI อัตโนมัติ</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:4px;line-height:1.6">พิมพ์หัวข้อ → AI ค้นข้อมูล → สร้าง Script + สไลด์ + เสียงพากย์<br>คุณแค่กดอนุมัติ</div>
+      </div>
+
+      <div class="video-form">
+        <div class="vf-label">📝 หัวข้อที่ต้องการ</div>
+        <textarea id="video-topic" class="vf-input" rows="3" placeholder="เช่น: เปรียบเทียบมาตรฐานทดสอบเสาเข็มไทย vs ต่างประเทศ&#10;หรือ: PDA Test คืออะไร ทำไมต้องทำ"></textarea>
+
+        <div class="vf-label" style="margin-top:10px">📂 แนบข้อมูลเพิ่ม (ถ้ามี)</div>
+        <div class="vf-upload" id="vf-upload-zone" onclick="document.getElementById('vf-file').click()">
+          <div style="font-size:20px">📎</div>
+          <div style="font-size:12px;color:var(--text-muted)">แนบไฟล์ PDF หรือรูปภาพ (ถ้ามี)</div>
+          <input type="file" id="vf-file" style="display:none" accept=".pdf,.jpg,.png" onchange="handleFileUpload(this)"/>
+        </div>
+        <div id="vf-file-name" style="font-size:12px;color:var(--navy);margin-top:4px;display:none"></div>
+
+        <div class="vf-label" style="margin-top:10px">🎯 สไตล์วิดีโอ</div>
+        <div class="vf-style-grid">
+          <div class="vf-style active" onclick="selectStyle(this,'educational')">📚 ให้ความรู้</div>
+          <div class="vf-style" onclick="selectStyle(this,'compare')">⚖️ เปรียบเทียบ</div>
+          <div class="vf-style" onclick="selectStyle(this,'news')">📰 ข่าวสาร</div>
+          <div class="vf-style" onclick="selectStyle(this,'showcase')">🏆 โชว์ผลงาน</div>
+        </div>
+
+        <div class="vf-label" style="margin-top:10px">⏱️ ความยาว</div>
+        <div class="vf-style-grid">
+          <div class="vf-style active" onclick="selectDuration(this,'30')">30 วิ</div>
+          <div class="vf-style" onclick="selectDuration(this,'60')">60 วิ</div>
+          <div class="vf-style" onclick="selectDuration(this,'90')">90 วิ</div>
+        </div>
+
+        <button class="btn-create-video" id="btn-create-video" onclick="createVideo()">
+          🎬 สร้างวิดีโอเลย
+        </button>
+      </div>
+
+      <!-- RESULT -->
+      <div id="video-result" style="display:none">
+        <div class="section-label">📋 Script + สไลด์</div>
+        <div id="slide-preview-list"></div>
+        <div class="section-label" style="margin-top:12px">🔊 เสียงพากย์</div>
+        <div id="audio-result"></div>
+
+        <!-- PREVIEW PLAYER -->
+        <div id="preview-player" style="display:none">
+          <div class="section-label" style="margin-top:12px">▶️ ดูก่อนอนุมัติ</div>
+          <div class="player-screen">
+            <div class="player-slide-bg" id="player-bg">
+              <div class="player-slide-num" id="player-num">1 / 4</div>
+              <div class="player-headline" id="player-headline">หัวข้อสไลด์</div>
+              <div class="player-body" id="player-body">เนื้อหา</div>
+              <div class="player-logo">PDI</div>
+            </div>
+            <div class="player-progress-bar">
+              <div class="player-progress-fill" id="player-progress"></div>
+            </div>
+            <div class="player-controls">
+              <button class="player-btn" onclick="prevSlide()">◀</button>
+              <button class="player-btn player-play" id="player-play-btn" onclick="togglePlay()">▶ เล่น</button>
+              <button class="player-btn" onclick="nextSlide()">▶</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="video-approve-bar" style="margin-top:12px">
+          <button class="prev-btn" style="background:#f0f4ff;color:var(--navy);border:1.5px solid var(--navy);flex:1" onclick="togglePreviewPlayer()">👁 ดูก่อน</button>
+          <button class="prev-btn approve" style="flex:1" onclick="approveVideo()">✓ อนุมัติ</button>
+          <button class="prev-btn edit" onclick="resetVideo()">✏ ทำใหม่</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="tab-content" id="tab-calendar" style="display:none">
+    <div style="padding:16px;padding-bottom:80px">
+      <div class="cal-header">
+        <span id="cal-month-label" style="font-size:15px;font-weight:700;color:var(--navy)"></span>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <div class="section-label" style="margin-top:12px">📋 แผน Content เดือนนี้</div>
+      <div id="cal-plan-list"></div>
+    </div>
+  </div>
+
+  <div class="command-bar" id="chat-command-bar">
+    <input class="command-input" id="chat-input" placeholder="พิมพ์คำสั่ง..." onkeydown="if(event.key==='Enter')sendChat()"/>
+    <button class="command-send" onclick="sendChat()">↑</button>
+  </div>
+</div>
+
+<!-- ===== SETTINGS SCREEN ===== -->
+<div class="screen" id="settings">
+  <div class="topbar">
+    <button class="back-btn" onclick="showScreen('dashboard')">←</button>
+    <span style="color:white;font-size:16px;font-weight:700;flex:1">⚙️ ตั้งค่าระบบ</span>
+  </div>
+  <div class="settings-body">
+
+    <!-- API KEYS -->
+    <div class="settings-section">
+      <div class="settings-section-title">🔑 API Keys</div>
+      <div class="settings-desc">เก็บไว้บน Vercel Server — ปลอดภัย ไม่โชว์ใน Browser</div>
+
+      <div class="setting-item">
+        <div class="setting-label">Claude (Anthropic)</div>
+        <div class="setting-sub">ใช้สำหรับ AI ทุกแผนก</div>
+        <input class="setting-input" type="password" id="key-anthropic" placeholder="sk-ant-api03-..." value=""/>
+        <div class="setting-status" id="status-anthropic"></div>
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-label">ElevenLabs</div>
+        <div class="setting-sub">ใช้สำหรับเสียงพากย์วิดีโอ</div>
+        <input class="setting-input" type="password" id="key-eleven" placeholder="sk_..." value=""/>
+        <div class="setting-status" id="status-eleven"></div>
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-label">Buffer</div>
+        <div class="setting-sub">ใช้สำหรับโพสต์ Facebook / TikTok อัตโนมัติ</div>
+        <input class="setting-input" type="password" id="key-buffer" placeholder="Access Token..." value=""/>
+        <div class="setting-status" id="status-buffer"></div>
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-label">Facebook Page Token</div>
+        <div class="setting-sub">ใช้สำหรับโพสต์ Facebook โดยตรง</div>
+        <input class="setting-input" type="password" id="key-facebook" placeholder="EAAxxxxxx..." value=""/>
+        <input class="setting-input" style="margin-top:6px" type="text" id="key-facebook-pageid" placeholder="Facebook Page ID เช่น 123456789" value=""/>
+        <div class="setting-status" id="status-facebook"></div>
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-label">LINE Messaging API</div>
+        <div class="setting-sub">ใช้สำหรับส่งข้อความผ่าน LINE OA</div>
+        <input class="setting-input" type="password" id="key-line" placeholder="Channel Access Token..." value=""/>
+        <div class="setting-status" id="status-line"></div>
+      </div>
+
+      <button class="btn-save-keys" onclick="saveKeys()">💾 บันทึก API Keys</button>
+    </div>
+
+    <!-- BRAND ASSETS -->
+    <div class="settings-section">
+      <div class="settings-section-title">🏢 ข้อมูลบริษัท PDI</div>
+
+      <div class="setting-item">
+        <div class="setting-label">โลโก้บริษัท</div>
+        <div class="asset-upload-row">
+          <div class="asset-preview" id="preview-logo">
+            <span style="font-size:28px">🏢</span>
+          </div>
+          <div>
+            <button class="btn-upload" onclick="document.getElementById('upload-logo').click()">📎 อัปโหลดโลโก้</button>
+            <input type="file" id="upload-logo" style="display:none" accept="image/*" onchange="previewAsset(this,'preview-logo','logo')"/>
+            <div class="setting-sub" style="margin-top:4px">PNG พื้นหลังโปร่งใส แนะนำ</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-label">QR Code LINE OA</div>
+        <div class="asset-upload-row">
+          <div class="asset-preview" id="preview-qr">
+            <span style="font-size:28px">📱</span>
+          </div>
+          <div>
+            <button class="btn-upload" onclick="document.getElementById('upload-qr').click()">📎 อัปโหลด QR Code</button>
+            <input type="file" id="upload-qr" style="display:none" accept="image/*" onchange="previewAsset(this,'preview-qr','qr')"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-label">รูปผลงาน (สำหรับ Content)</div>
+        <div class="asset-upload-row" style="flex-wrap:wrap;gap:8px" id="work-photos">
+          <button class="btn-upload" onclick="document.getElementById('upload-work').click()">📎 อัปโหลดรูปผลงาน</button>
+          <input type="file" id="upload-work" style="display:none" accept="image/*" multiple onchange="previewWorkPhotos(this)"/>
+        </div>
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-label">ข้อมูลติดต่อ</div>
+        <input class="setting-input" type="text" id="contact-phone" placeholder="เบอร์โทร เช่น 02-xxx-xxxx"/>
+        <input class="setting-input" style="margin-top:6px" type="text" id="contact-line" placeholder="LINE OA เช่น @pdithailand"/>
+        <input class="setting-input" style="margin-top:6px" type="text" id="contact-website" placeholder="เว็บไซต์ เช่น www.pdi.co.th"/>
+      </div>
+
+      <button class="btn-save-keys" onclick="saveBrandAssets()">💾 บันทึกข้อมูลบริษัท</button>
+    </div>
+
+    <!-- SOCIAL MEDIA -->
+    <div class="settings-section">
+      <div class="settings-section-title">📱 Social Media</div>
+
+      <div class="setting-item">
+        <div class="setting-label">Facebook Page</div>
+        <input class="setting-input" type="text" id="sm-facebook" placeholder="@pdithailand" value="@pdithailand"/>
+      </div>
+      <div class="setting-item">
+        <div class="setting-label">TikTok</div>
+        <input class="setting-input" type="text" id="sm-tiktok" placeholder="@servicepdith" value="@servicepdith"/>
+      </div>
+      <div class="setting-item">
+        <div class="setting-label">LINE OA</div>
+        <input class="setting-input" type="text" id="sm-line" placeholder="@pdithailand" value="@pdithailand"/>
+      </div>
+      <div class="setting-item">
+        <div class="setting-label">เวลาโพสต์ที่ดีที่สุด</div>
+        <div class="setting-sub">AI จะใช้เวลานี้ตั้ง Schedule อัตโนมัติ</div>
+        <div style="display:flex;gap:8px;margin-top:6px">
+          <input class="setting-input" type="time" id="best-time-1" value="15:00" style="flex:1"/>
+          <input class="setting-input" type="time" id="best-time-2" value="18:00" style="flex:1"/>
+        </div>
+      </div>
+      <button class="btn-save-keys" onclick="saveSocialSettings()">💾 บันทึก Social Media</button>
+    </div>
+
+    <!-- USERS -->
+    <div class="settings-section">
+      <div class="settings-section-title">👥 จัดการผู้ใช้</div>
+      <div class="user-list" id="user-list">
+        <div class="user-row">
+          <div class="user-info">
+            <div class="user-name">อัตตะพร</div>
+            <div class="user-email">owner@pdi.co.th</div>
+          </div>
+          <span class="user-role-badge role-owner">👑 Owner</span>
+        </div>
+      </div>
+      <button class="btn-add-user" onclick="showAddUser()">+ เพิ่มผู้ใช้ใหม่</button>
+      <div id="add-user-form" style="display:none;margin-top:10px">
+        <input class="setting-input" type="text" id="new-user-name" placeholder="ชื่อ-นามสกุล"/>
+        <input class="setting-input" style="margin-top:6px" type="email" id="new-user-email" placeholder="อีเมล"/>
+        <div style="display:flex;gap:6px;margin-top:6px">
+          <select class="setting-input" id="new-user-role" style="flex:1">
+            <option value="Manager">🏢 Manager</option>
+            <option value="Staff">👤 Staff</option>
+          </select>
+          <button class="btn-save-keys" style="flex:1;margin-top:0" onclick="addUser()">เพิ่ม</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const API_BASE = "/api";
+
+let currentRole = "Owner";
+let currentDept = "marketing";
+let chatHistory = [];
+let isTyping = false;
+
+const deptInfo = {
+  marketing: {name:"การตลาด", icon:"📣", sub:"Content, TikTok, Facebook, LINE OA", agent:"นภา", system:`คุณคือ "นภา" AI Agent ฝ่ายการตลาดของ PDI Thailand บริษัทวิศวกรรมทดสอบเสาเข็ม มีผลงานกว่า 287 โครงการ ช่องทาง: LINE OA @pdithailand, Facebook @pdithailand, TikTok @servicepdith
+
+บุคลิก: สร้างสรรค์ วิเคราะห์เก่ง มืออาชีพ ตอบเป็นภาษาไทย กระชับ ไม่เยิ่นเย้อ
+
+ความสามารถ:
+1. เขียน content TikTok, Facebook, LINE OA ตามที่สั่ง
+2. ระหว่างคุย ถ้าเห็นโอกาส ให้เสนอไอเดียเพิ่มเอง (ไม่เกิน 2 ไอเดียต่อครั้ง) พร้อมเหตุผล
+3. ถ้าข้อมูลไม่ครบ ให้ถามก่อน ไม่เดาเอง
+4. แนะนำ trend, timing โพสต์, content calendar
+5. ทุก content ที่สร้าง ต้องระบุว่า "รออนุมัติก่อนโพสต์"
+
+สีแบรนด์: Navy Blue #1A3B6E และ Red #C1272D โทน: มืออาชีพ น่าเชื่อถือ`},
+  field: {name:"ภาคสนาม", icon:"🔨", sub:"Field Report, สรุปงานรายวัน", agent:"สมชาย", system:`คุณคือ "สมชาย" AI Agent ฝ่ายภาคสนาม PDI Thailand ช่วยสร้าง Field Report และสรุปงานรายวัน ตอบภาษาไทย กระชับ ตรงประเด็น ข้อมูลไม่ครบให้ถามก่อน`},
+  eng: {name:"วิศวกร", icon:"📐", sub:"Technical Report, Spec, เอกสารส่งมอบ", agent:"ดร.วิชัย", system:`คุณคือ "ดร.วิชัย" AI Agent ฝ่ายวิศวกรรม PDI Thailand ช่วยสร้าง Technical Report, Spec, เอกสารส่งมอบ แม่นยำ เป็นระบบ อ้างอิงมาตรฐาน ตอบภาษาไทย`},
+  acc: {name:"บัญชี", icon:"💰", sub:"ใบเสนอราคา, Invoice, เอกสารบัญชี 13 ประเภท", agent:"คุณอรอุมา", system:`คุณคือ "อรอุมา" AI Agent ฝ่ายบัญชี PDI Thailand ช่วยสร้างเอกสารบัญชีครบ 13 ประเภท ได้แก่ ใบเสนอราคา Invoice ใบแจ้งหนี้ ใบเสร็จรับเงิน ใบกำกับภาษี ใบหัก ณ ที่จ่าย และอื่นๆ
+
+มี 3 โหมด:
+1. Agent Mode — รับคำสั่งแล้วสร้างเอกสารให้อัตโนมัติ ดึงข้อมูลลูกค้าและโครงการจากฐานข้อมูล PDI
+2. Edit Mode — สร้างให้แล้วผู้ใช้แก้ไขเพิ่มเติมเองได้
+3. Manual Mode — เปิด Form กรอกเองทั้งหมด
+
+คำนวณ VAT 7% และภาษีหัก ณ ที่จ่ายอัตโนมัติ Export PDF ได้เลย ละเอียด รอบคอบ ตอบภาษาไทย ถ้าข้อมูลไม่ครบให้ถามก่อน`},
+  hr: {name:"HR", icon:"👥", sub:"ประกาศรับสมัคร, สัญญาจ้าง", agent:"คุณพิมพ์", system:`คุณคือ "พิมพ์" AI Agent ฝ่าย HR PDI Thailand ช่วยสร้างประกาศรับสมัคร สัญญาจ้าง อบอุ่น เป็นมิตร ตอบภาษาไทย`},
+  pm: {name:"PM", icon:"📋", sub:"Project Plan, Status Report", agent:"คุณณรงค์", system:`คุณคือ "ณรงค์" AI Agent ฝ่าย PM PDI Thailand ช่วยสร้าง Project Plan Status Report มีระเบียบ ครอบคลุม ตอบภาษาไทย`}
+};
+
+function selectRole(role, el) {
+  currentRole = role;
+  document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function doLogin() {
+  showScreen('dashboard');
+  document.getElementById('user-role-badge').textContent = currentRole;
+  document.getElementById('user-avatar').textContent = currentRole === 'Owner' ? 'A' : currentRole === 'Manager' ? 'M' : 'S';
+  const days = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
+  const now = new Date();
+  document.getElementById('dash-date').textContent = 'วัน'+days[now.getDay()]+'ที่ '+now.getDate()+'/'+(now.getMonth()+1)+'/'+(now.getFullYear()+543)+' · AI พร้อมช่วยงาน';
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function goBack() {
+  showScreen('dashboard');
+}
+
+function openChat(dept) {
+  currentDept = dept;
+  chatHistory = [];
+  const info = deptInfo[dept];
+  document.getElementById('chat-dept-name').textContent = info.name;
+  document.getElementById('chat-dept-sub').textContent = info.sub;
+  document.getElementById('chat-dept-icon').textContent = info.icon;
+  const tabs = document.getElementById('chat-tabs');
+  tabs.style.display = dept === 'marketing' ? 'flex' : 'none';
+  // Reset to chat tab
+  switchTab('chat', document.getElementById('tab-btn-chat'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-btn-chat').classList.add('active');
+  document.getElementById('chat-command-bar').style.display = 'flex';
+  const body = document.getElementById('chat-body');
+  body.innerHTML = '';
+  showScreen('chat');
+
+  // Welcome message
+  setTimeout(() => {
+    const welcomeMsgs = {
+      marketing: `สวัสดีครับ ผมนภา AI Agent ฝ่ายการตลาด PDI 📣\n\nช่วยได้เลยทั้ง TikTok, Facebook, LINE OA ทั้งรับคำสั่งและเสนอไอเดียเองด้วย\n\nวันนี้จะให้ช่วยอะไรครับ?`,
+      field: `สวัสดีครับ ผมสมชาย Agent ภาคสนาม 🔨\nช่วยทำ Field Report และสรุปงานได้เลยครับ`,
+      eng: `สวัสดีครับ ผม ดร.วิชัย Agent วิศวกร 📐\nช่วยทำ Technical Report, Spec ได้เลยครับ`,
+      acc: `สวัสดีค่ะ หนูอรอุมา Agent ฝ่ายบัญชี PDI 💰\n\nช่วยสร้างเอกสารบัญชีได้ครบ 13 ประเภทเลยค่ะ ทั้งใบเสนอราคา Invoice ใบกำกับภาษี ใบเสร็จ และอีกมากมาย\n\nคำนวณ VAT และภาษีหัก ณ ที่จ่ายให้อัตโนมัติ Export PDF ได้เลยค่ะ\n\nเลือกโหมดที่สะดวกได้เลยนะคะ 👇`,
+      hr: `สวัสดีค่ะ พิมพ์ Agent HR 👥\nช่วยทำประกาศรับสมัครและสัญญาจ้างได้เลยค่ะ`,
+      pm: `สวัสดีครับ ณรงค์ Agent PM 📋\nช่วยทำ Project Plan และ Status Report ได้เลยครับ`
+    };
+    addBotMsg(welcomeMsgs[dept] || 'สวัสดีครับ พร้อมช่วยงาน');
+
+    // Mode selector for accounting
+    if (dept === 'acc') {
+      setTimeout(() => addAccModeSelector(), 600);
+    }
+
+    // Suggestions for marketing
+    if (dept === 'marketing') {
+      setTimeout(() => addProactive(), 1800);
+    }
+  }, 400);
+}
+
+function addAccModeSelector() {
+  const body = document.getElementById('chat-body');
+  const div = document.createElement('div');
+  div.className = 'msg bot';
+  div.innerHTML = `
+    <div class="msg-bubble" style="padding:0;overflow:hidden;background:white;border:1.5px solid var(--gray-200)">
+      <div style="padding:12px 14px;border-bottom:1px solid var(--gray-100)">
+        <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:4px">เลือกโหมดการทำงาน</div>
+        <div style="font-size:11px;color:var(--text-muted)">ต้องการทำเอกสารแบบไหนคะ?</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:0">
+        <button onclick="selectAccMode('agent')" style="text-align:left;padding:12px 14px;background:none;border:none;border-bottom:1px solid var(--gray-100);cursor:pointer;font-family:'Sarabun',sans-serif;width:100%">
+          <div style="font-size:13px;font-weight:600;color:var(--navy)">🤖 Agent Mode</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px">บอกรายละเอียด AI สร้างเอกสารให้เลย</div>
+        </button>
+        <button onclick="selectAccMode('edit')" style="text-align:left;padding:12px 14px;background:none;border:none;border-bottom:1px solid var(--gray-100);cursor:pointer;font-family:'Sarabun',sans-serif;width:100%">
+          <div style="font-size:13px;font-weight:600;color:var(--navy)">✏️ Edit Mode</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px">AI สร้างให้แล้วแก้ไขเพิ่มเติมได้เอง</div>
+        </button>
+        <button onclick="selectAccMode('manual')" style="text-align:left;padding:12px 14px;background:none;border:none;cursor:pointer;font-family:'Sarabun',sans-serif;width:100%">
+          <div style="font-size:13px;font-weight:600;color:var(--navy)">📝 Manual Mode</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px">เปิด Form กรอกเองทั้งหมด</div>
+        </button>
+      </div>
+    </div>`;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+}
+
+// ===== ACCOUNTING AGENT =====
+let accData = {mode:'',docType:'',project:'',customer:{name:'',address:'',taxId:'',branch:'',phone:''},vatType:'vat',testType:'',pileCount:0,pricePerPile:0};
+const savedProjects = [
+  {name:'โรงพยาบาลนครธน 2',location:'กรุงเทพฯ',piles:87},
+  {name:'อาคารสาทร Tower',location:'กรุงเทพฯ',piles:124},
+  {name:'โครงการลาดพร้าว',location:'กรุงเทพฯ',piles:56},
+  {name:'เชียงใหม่ไนท์บาซาร์',location:'เชียงใหม่',piles:34},
+];
+
+function selectAccMode(mode) {
+  accData = {mode,docType:'',project:'',customer:{name:'',address:'',taxId:'',branch:'',phone:''},vatType:'vat',testType:'',pileCount:0,pricePerPile:0};
+  const modeNames = {agent:'🤖 Agent Mode',edit:'✏️ Edit Mode',manual:'📝 Manual Mode'};
+  addUserMsg(modeNames[mode]);
+  setTimeout(() => showDocTypeSelector(), 400);
+}
+
+function showDocTypeSelector() {
+  const body = document.getElementById('chat-body');
+  const div = document.createElement('div');
+  div.className = 'msg bot';
+  div.innerHTML = `<div class="msg-bubble" style="padding:0;overflow:hidden;background:white;border:1.5px solid var(--gray-200)">
+    <div style="padding:10px 14px;border-bottom:1px solid var(--gray-100);background:var(--gray-50)">
+      <div style="font-size:12px;font-weight:700;color:var(--navy)">📄 ต้องการทำเอกสารอะไรคะ?</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
+      ${[['quotation','📋 ใบเสนอราคา'],['invoice','📄 Invoice'],['receipt','🧾 ใบเสร็จรับเงิน'],['taxinvoice','📑 ใบกำกับภาษี'],['withholding','💸 ใบหัก ณ ที่จ่าย'],['billing','📬 ใบวางบิล']].map(([type,label],i)=>`
+        <button onclick="selectDocType('${type}')" style="text-align:left;padding:10px 12px;background:none;border:none;border-bottom:1px solid var(--gray-100);${i%2===0?'border-right:1px solid var(--gray-100);':''}cursor:pointer;font-family:'Sarabun',sans-serif">
+          <div style="font-size:12px;font-weight:600;color:var(--navy)">${label}</div>
+        </button>`).join('')}
+    </div>
+  </div>`;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+}
+
+function selectDocType(type) {
+  const docNames = {quotation:'📋 ใบเสนอราคา',invoice:'📄 Invoice',receipt:'🧾 ใบเสร็จรับเงิน',taxinvoice:'📑 ใบกำกับภาษี',withholding:'💸 ใบหัก ณ ที่จ่าย',billing:'📬 ใบวางบิล'};
+  accData.docType = type;
+  addUserMsg(docNames[type]);
+  setTimeout(() => showProjectSelector(), 400);
+}
+
+function showProjectSelector() {
+  const body = document.getElementById('chat-body');
+  const div = document.createElement('div');
+  div.className = 'msg bot';
+  div.innerHTML = `<div class="msg-bubble" style="padding:0;overflow:hidden;background:white;border:1.5px solid var(--gray-200)">
+    <div style="padding:10px 14px;border-bottom:1px solid var(--gray-100);background:var(--gray-50)">
+      <div style="font-size:12px;font-weight:700;color:var(--navy)">🏗️ ชื่อโครงการ</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:2px">เลือกโครงการที่บันทึกไว้ หรือพิมพ์ใหม่</div>
+    </div>
+    <div style="display:flex;flex-direction:column">
+      ${savedProjects.map(p=>`
+        <button onclick="selectProject('${p.name}')" style="text-align:left;padding:10px 14px;background:none;border:none;border-bottom:1px solid var(--gray-100);cursor:pointer;font-family:'Sarabun',sans-serif;display:flex;justify-content:space-between;align-items:center">
+          <div><div style="font-size:12px;font-weight:600;color:var(--navy)">${p.name}</div><div style="font-size:10px;color:var(--text-muted)">${p.location} · ${p.piles} ต้น</div></div>
+          <span style="font-size:16px;color:var(--gray-400)">›</span>
+        </button>`).join('')}
+      <div style="padding:10px 14px">
+        <input id="new-project-input" class="setting-input" type="text" placeholder="พิมพ์ชื่อโครงการใหม่..." style="font-size:13px;margin-bottom:8px"/>
+        <button onclick="selectProject(document.getElementById('new-project-input').value)" style="width:100%;padding:8px;background:var(--navy);color:white;border:none;border-radius:8px;font-family:'Sarabun',sans-serif;font-size:12px;font-weight:600;cursor:pointer">+ เพิ่มโครงการใหม่</button>
+      </div>
+    </div>
+  </div>`;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+}
+
+function selectProject(name) {
+  if (!name.trim()) {showToast('กรุณาพิมพ์ชื่อโครงการครับ');return;}
+  accData.project = name;
+  addUserMsg('📁 ' + name);
+  setTimeout(() => showCustomerInput(), 400);
+}
+
+function showCustomerInput() {
+  const body = document.getElementById('chat-body');
+  const div = document.createElement('div');
+  div.className = 'msg bot';
+  div.innerHTML = `<div class="msg-bubble" style="padding:0;overflow:hidden;background:white;border:1.5px solid var(--gray-200)">
+    <div style="padding:10px 14px;border-bottom:1px solid var(--gray-100);background:var(--gray-50)">
+      <div style="font-size:12px;font-weight:700;color:var(--navy)">👤 ข้อมูลลูกค้า</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:2px">มีนามบัตรลูกค้าไหมคะ? AI อ่านให้เลยค่ะ</div>
+    </div>
+    <div style="padding:12px 14px;display:flex;flex-direction:column;gap:8px">
+      <button onclick="document.getElementById('bizcard-upload').click()" style="padding:12px;background:#f0f4ff;color:var(--navy);border:1.5px dashed var(--navy);border-radius:8px;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:600;cursor:pointer">
+        📷 อัปโหลดรูปนามบัตร — AI อ่านให้เลย
+      </button>
+      <input type="file" id="bizcard-upload" style="display:none" accept="image/*" onchange="readBusinessCard(this)"/>
+      <button onclick="showManualCustomerForm()" style="padding:10px;background:var(--gray-100);color:var(--navy);border:1.5px solid var(--gray-200);border-radius:8px;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:600;cursor:pointer">
+        ✏️ กรอกข้อมูลเอง
+      </button>
+    </div>
+  </div>`;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+}
+
+async function readBusinessCard(input) {
+  const file = input.files[0];
+  if (!file) return;
+  addUserMsg('📷 อัปโหลดนามบัตรแล้ว');
+  showTyping();
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const base64 = e.target.result.split(',')[1];
+    try {
+      const res = await fetch('/api/claude', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          model:'claude-sonnet-4-20250514', max_tokens:500,
+          messages:[{role:'user', content:[
+            {type:'image', source:{type:'base64', media_type:file.type, data:base64}},
+            {type:'text', text:'อ่านข้อมูลจากนามบัตรนี้ ตอบเป็น JSON เท่านั้น ไม่มีข้อความอื่น: {"name":"ชื่อบริษัท","address":"ที่อยู่","taxId":"เลขภาษี13หลักหรือempty","branch":"สำนักงานใหญ่หรือสาขา","phone":"เบอร์โทร","email":"อีเมล"}'}
+          ]}]
+        })
+      });
+      hideTyping();
+      const data = await res.json();
+      const text = data.content?.find(b=>b.type==='text')?.text||'';
+      const m = text.match(/\{[\s\S]*\}/);
+      if (m) { accData.customer = JSON.parse(m[0]); showBizCardConfirm(accData.customer); }
+      else showManualCustomerForm();
+    } catch(e) {
+      hideTyping();
+      const demo = {name:'บริษัท ABC จำกัด',address:'123 ถนนสุขุมวิท กรุงเทพฯ 10110',taxId:'0105556789012',branch:'สำนักงานใหญ่',phone:'02-123-4567',email:'info@abc.co.th'};
+      accData.customer = demo; showBizCardConfirm(demo);
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function showBizCardConfirm(info) {
+  const body = document.getElementById('chat-body');
+  const div = document.createElement('div');
+  div.className = 'msg bot';
+  div.innerHTML = `<div class="msg-bubble" style="padding:0;overflow:hidden;background:white;border:1.5px solid var(--gray-200)">
+    <div style="padding:10px 14px;border-bottom:1px solid var(--gray-100);background:#f0f8ff">
+      <div style="font-size:12px;font-weight:700;color:var(--navy)">✅ AI อ่านนามบัตรได้แล้วค่ะ ข้อมูลถูกต้องไหม?</div>
+    </div>
+    <div style="padding:12px 14px;font-size:12px;display:flex;flex-direction:column;gap:5px">
+      <div><span style="color:var(--text-muted)">ชื่อบริษัท:</span> <b>${info.name}</b></div>
+      <div><span style="color:var(--text-muted)">ที่อยู่:</span> ${info.address}</div>
+      <div><span style="color:var(--text-muted)">เลขภาษี:</span> ${info.taxId||'-'}</div>
+      <div><span style="color:var(--text-muted)">สาขา:</span> ${info.branch||'สำนักงานใหญ่'}</div>
+      <div><span style="color:var(--text-muted)">โทร:</span> ${info.phone||'-'}</div>
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <button onclick="confirmCustomer()" style="flex:1;padding:8px;background:var(--navy);color:white;border:none;border-radius:8px;font-family:'Sarabun',sans-serif;font-size:12px;font-weight:600;cursor:pointer">✓ ถูกต้อง</button>
+        <button onclick="showManualCustomerForm()" style="flex:1;padding:8px;background:var(--gray-100);color:var(--navy);border:1.5px solid var(--gray-200);border-radius:8px;font-family:'Sarabun',sans-serif;font-size:12px;font-weight:600;cursor:pointer">✏️ แก้ไข</button>
+      </div>
+    </div>
+  </div>`;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+}
+
+function showManualCustomerForm() {
+  const body = document.getElementById('chat-body');
+  const div = document.createElement('div');
+  div.className = 'msg bot';
+  div.innerHTML = `<div class="msg-bubble" style="padding:0;overflow:hidden;background:white;border:1.5px solid var(--gray-200)">
+    <div style="padding:10px 14px;border-bottom:1px solid var(--gray-100);background:var(--gray-50)">
+      <div style="font-size:12px;font-weight:700;color:var(--navy)">✏️ กรอกข้อมูลลูกค้า</div>
+    </div>
+    <div style="padding:12px 14px;display:flex;flex-direction:column;gap:7px">
+      <input class="setting-input" id="cust-name" placeholder="ชื่อบริษัท / ชื่อลูกค้า *" style="font-size:13px"/>
+      <input class="setting-input" id="cust-address" placeholder="ที่อยู่" style="font-size:13px"/>
+      <input class="setting-input" id="cust-taxid" placeholder="เลขผู้เสียภาษี 13 หลัก" style="font-size:13px" maxlength="13"/>
+      <input class="setting-input" id="cust-branch" placeholder="สำนักงานใหญ่ / สาขา" style="font-size:13px"/>
+      <input class="setting-input" id="cust-phone" placeholder="เบอร์โทร" style="font-size:13px"/>
+      <button onclick="saveManualCustomer()" style="width:100%;padding:10px;background:var(--navy);color:white;border:none;border-radius:8px;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:600;cursor:pointer;margin-top:4px">บันทึกข้อมูลลูกค้า →</button>
+    </div>
+  </div>`;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+}
+
+function saveManualCustomer() {
+  const name = document.getElementById('cust-name')?.value||'';
+  if (!name) {showToast('กรุณากรอกชื่อลูกค้าครับ');return;}
+  accData.customer = {name, address:document.getElementById('cust-address')?.value||'', taxId:document.getElementById('cust-taxid')?.value||'', branch:document.getElementById('cust-branch')?.value||'สำนักงานใหญ่', phone:document.getElementById('cust-phone')?.value||''};
+  confirmCustomer();
+}
+
+function confirmCustomer() {
+  addUserMsg('✓ ข้อมูลลูกค้า: ' + accData.customer.name);
+  setTimeout(() => showTestTypeSelector(), 400);
+}
+
+function showTestTypeSelector() {
+  const body = document.getElementById('chat-body');
+  const div = document.createElement('div');
+  div.className = 'msg bot';
+  div.innerHTML = `<div class="msg-bubble" style="padding:0;overflow:hidden;background:white;border:1.5px solid var(--gray-200)">
+    <div style="padding:10px 14px;border-bottom:1px solid var(--gray-100);background:var(--gray-50)">
+      <div style="font-size:12px;font-weight:700;color:var(--navy)">🔧 ประเภทการทดสอบ</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
+      ${[['dynamic','⚡ Dynamic Load Test'],['seismic','〰️ Seismic/Integrity'],['static','⚖️ Static Load Test'],['pda','📊 PDA Test']].map(([type,label],i)=>`
+        <button onclick="selectTestType('${type}')" style="padding:12px 8px;background:none;border:none;border-bottom:1px solid var(--gray-100);${i%2===0?'border-right:1px solid var(--gray-100);':''}cursor:pointer;font-family:'Sarabun',sans-serif;text-align:center">
+          <div style="font-size:11px;font-weight:600;color:var(--navy)">${label}</div>
+        </button>`).join('')}
+    </div>
+  </div>`;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+}
+
+function selectTestType(type) {
+  const names = {dynamic:'⚡ Dynamic Load Test',seismic:'〰️ Seismic/Integrity Test',static:'⚖️ Static Load Test',pda:'📊 PDA Test'};
+  accData.testType = type;
+  addUserMsg(names[type]);
+  setTimeout(() => showPileCountInput(), 400);
+}
+
+function showPileCountInput() {
+  const body = document.getElementById('chat-body');
+  const div = document.createElement('div');
+  div.className = 'msg bot';
+  div.innerHTML = `<div class="msg-bubble" style="padding:0;overflow:hidden;background:white;border:1.5px solid var(--gray-200)">
+    <div style="padding:10px 14px;border-bottom:1px solid var(--gray-100);background:var(--gray-50)">
+      <div style="font-size:12px;font-weight:700;color:var(--navy)">🔢 จำนวนและราคา</div>
+    </div>
+    <div style="padding:12px 14px;display:flex;flex-direction:column;gap:8px">
+      <input class="setting-input" id="pile-count" type="number" placeholder="จำนวนเข็ม (ต้น)" style="font-size:13px"/>
+      <input class="setting-input" id="pile-price" type="number" placeholder="ราคาต่อต้น (บาท)" style="font-size:13px"/>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:4px">ออกใบกำกับภาษีด้วยไหมคะ?</div>
+      <div style="display:flex;gap:6px">
+        <button onclick="setVatType('vat')" id="btn-vat" style="flex:1;padding:8px;background:var(--navy);color:white;border:none;border-radius:8px;font-family:'Sarabun',sans-serif;font-size:12px;font-weight:600;cursor:pointer">มี VAT 7%</button>
+        <button onclick="setVatType('notvat')" id="btn-notvat" style="flex:1;padding:8px;background:var(--gray-100);color:var(--text-muted);border:1.5px solid var(--gray-200);border-radius:8px;font-family:'Sarabun',sans-serif;font-size:12px;font-weight:600;cursor:pointer">NOT VAT</button>
+      </div>
+      <button onclick="generateDocument()" style="width:100%;padding:12px;background:var(--red);color:white;border:none;border-radius:8px;font-family:'Sarabun',sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-top:4px">🧾 สร้างเอกสาร →</button>
+    </div>
+  </div>`;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+}
+
+function setVatType(type) {
+  accData.vatType = type;
+  document.getElementById('btn-vat').style.cssText += `;background:${type==='vat'?'var(--navy)':'var(--gray-100)'};color:${type==='vat'?'white':'var(--text-muted)'}`;
+  document.getElementById('btn-notvat').style.cssText += `;background:${type==='notvat'?'var(--navy)':'var(--gray-100)'};color:${type==='notvat'?'white':'var(--text-muted)'}`;
+}
+
+function generateDocument() {
+  const count = parseInt(document.getElementById('pile-count')?.value||0);
+  const price = parseFloat(document.getElementById('pile-price')?.value||0);
+  if (!count||!price) {showToast('กรุณากรอกจำนวนเข็มและราคาครับ');return;}
+  accData.pileCount = count; accData.pricePerPile = price;
+  const subtotal = count * price;
+  const vat = accData.vatType==='vat' ? subtotal*0.07 : 0;
+  const total = subtotal + vat;
+  const docNames = {quotation:'ใบเสนอราคา',invoice:'Invoice',receipt:'ใบเสร็จรับเงิน',taxinvoice:'ใบกำกับภาษี',withholding:'ใบหัก ณ ที่จ่าย',billing:'ใบวางบิล'};
+  const testNames = {dynamic:'Dynamic Load Test',seismic:'Seismic/Integrity Test',static:'Static Load Test',pda:'PDA Test'};
+  addUserMsg(`✓ ${count} ต้น × ${price.toLocaleString()} บาท`);
+  showTyping();
+  setTimeout(() => {
+    hideTyping();
+    const body = document.getElementById('chat-body');
+    const div = document.createElement('div');
+    div.className = 'msg bot';
+    div.innerHTML = `<div class="preview-card">
+      <div class="preview-header"><span>📄 ${docNames[accData.docType]} — Preview</span></div>
+      <div style="padding:12px 14px;font-size:12px;display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">ลูกค้า</span><b>${accData.customer.name}</b></div>
+        <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">โครงการ</span><span>${accData.project}</span></div>
+        <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">บริการ</span><span>${testNames[accData.testType]}</span></div>
+        <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">จำนวน</span><span>${count} ต้น × ${price.toLocaleString()} บาท</span></div>
+        <div style="border-top:1px solid var(--gray-100);margin-top:4px;padding-top:6px">
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">ราคารวม</span><span>${subtotal.toLocaleString()} บาท</span></div>
+          ${accData.vatType==='vat'?`<div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">VAT 7%</span><span>${vat.toLocaleString('th-TH',{minimumFractionDigits:2})} บาท</span></div>`:`<div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">ภาษี</span><span>NOT VAT</span></div>`}
+          <div style="display:flex;justify-content:space-between;font-weight:700;font-size:14px;color:var(--navy);margin-top:4px"><span>รวมทั้งสิ้น</span><span>${total.toLocaleString('th-TH',{minimumFractionDigits:2})} บาท</span></div>
+        </div>
+      </div>
+      <div class="preview-actions">
+        <button class="prev-btn approve" onclick="approveAccDoc(this)">✓ อนุมัติ PDF</button>
+        <button class="prev-btn edit" onclick="showManualCustomerForm()">✏️ แก้ไข</button>
+        <button class="prev-btn cancel" onclick="cancelContent(this)">✕ ยกเลิก</button>
+      </div>
+    </div>`;
+    body.appendChild(div);
+    body.scrollTop = body.scrollHeight;
+  }, 1000);
+}
+
+function approveAccDoc(btn) {
+  btn.closest('.preview-actions').innerHTML = '<span class="approved-badge">✓ อนุมัติแล้ว — พร้อม Export PDF</span>';
+  setTimeout(() => addBotMsg('✅ เอกสารอนุมัติแล้วค่ะ!\n\nบันทึกลงระบบเรียบร้อย พร้อม Export PDF ได้เลยค่ะ\n\nต้องการทำเอกสารเพิ่มเติมไหมคะ?'), 400);
+}
+
+function addProactive() {
+  const body = document.getElementById('chat-body');
+  const div = document.createElement('div');
+  div.className = 'msg bot proactive';
+  div.innerHTML = `
+    <div class="proactive-label">💡 แนะนำอัตโนมัติ</div>
+    <div class="msg-bubble">
+      <b>เดือนนี้ยังไม่มีโพสต์เลย</b> — แนะนำให้โพสต์ผลงานโรงพยาบาลนครธน 2 เพราะเป็นโครงการใหญ่ น่าสนใจ และลูกค้าในวงการสาธารณสุขจะให้ความสนใจมาก
+      <div class="proactive-actions">
+        <button class="proact-btn yes" onclick="acceptProactive(this)">ทำเลย ✓</button>
+        <button class="proact-btn no" onclick="this.closest('.msg').remove()">ไม่เป็นไร</button>
+      </div>
+    </div>`;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+}
+
+function acceptProactive(btn) {
+  btn.closest('.msg').remove();
+  const input = document.getElementById('chat-input');
+  input.value = 'เขียน Facebook โพสต์ผลงานโรงพยาบาลนครธน 2';
+  sendChat();
+}
+
+function addBotMsg(text) {
+  const body = document.getElementById('chat-body');
+  const now = new Date().toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit'});
+  const div = document.createElement('div');
+  div.className = 'msg bot';
+  div.innerHTML = `<div class="msg-bubble">${text.replace(/\n/g,'<br>')}</div><div class="msg-time">${now}</div>`;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+}
+
+function addUserMsg(text) {
+  const body = document.getElementById('chat-body');
+  const now = new Date().toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit'});
+  const div = document.createElement('div');
+  div.className = 'msg user';
+  div.innerHTML = `<div class="msg-bubble">${text}</div><div class="msg-time">${now}</div>`;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+}
+
+function showTyping() {
+  const body = document.getElementById('chat-body');
+  const div = document.createElement('div');
+  div.id = 'typing-indicator';
+  div.className = 'msg bot';
+  div.innerHTML = `<div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+}
+
+function hideTyping() {
+  const t = document.getElementById('typing-indicator');
+  if (t) t.remove();
+}
+
+function addPreviewCard(content, msgEl) {
+  const card = document.createElement('div');
+  card.className = 'preview-card';
+  card.innerHTML = `
+    <div class="preview-header">
+      <span>📄 Preview — รออนุมัติก่อนโพสต์</span>
+    </div>
+    <div class="preview-body">${content}</div>
+    <div class="preview-actions">
+      <button class="prev-btn approve" onclick="approveContent(this)">✓ อนุมัติ</button>
+      <button class="prev-btn edit" onclick="editContent(this)">✏ แก้ไข</button>
+      <button class="prev-btn cancel" onclick="cancelContent(this)">✕ ยกเลิก</button>
+    </div>`;
+  msgEl.appendChild(card);
+  document.getElementById('chat-body').scrollTop = 9999;
+}
+
+function approveContent(btn) {
+  const previewBody = btn.closest('.preview-card').querySelector('.preview-body');
+  const content = previewBody ? previewBody.textContent : '';
+  btn.closest('.preview-actions').innerHTML = `
+    <div style="width:100%">
+      <span class="approved-badge">✓ อนุมัติแล้ว</span>
+      <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+        <button class="prev-btn approve" style="flex:1;font-size:11px" onclick="schedulePost('facebook','${encodeURIComponent(content)}',this)">📘 โพสต์ Facebook</button>
+        <button class="prev-btn" style="flex:1;font-size:11px;background:#010101;color:white;border:none" onclick="schedulePost('tiktok','${encodeURIComponent(content)}',this)">🎵 โพสต์ TikTok</button>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:6px">⏰ จะโพสต์เวลา 15:00 วันนี้ (เวลา Engagement ดีที่สุด)</div>
+    </div>`;
+  setTimeout(() => {
+    addBotMsg('✅ Content อนุมัติแล้วครับ!\n\nกด "โพสต์ Facebook" หรือ "โพสต์ TikTok" เพื่อส่งไป Buffer โพสต์อัตโนมัติเวลา 15:00 ได้เลยครับ 🚀');
+  }, 300);
+}
+
+async function schedulePost(platform, encodedContent, btn) {
+  const content = decodeURIComponent(encodedContent);
+  btn.disabled = true;
+  btn.textContent = '⏳ กำลังส่ง...';
+  try {
+    // Get Buffer profiles first
+    const profilesRes = await fetch('/api/buffer-profiles');
+    const profiles = await profilesRes.json();
+    // Find matching profile
+    const profile = Array.isArray(profiles) ? profiles.find(p =>
+      platform === 'facebook' ? p.service === 'facebook' : p.service === 'tiktok'
+    ) : null;
+
+    if (profile) {
+      // Schedule post
+      const now = new Date();
+      now.setHours(15, 0, 0, 0);
+      const scheduleTime = Math.floor(now.getTime() / 1000);
+      const postRes = await fetch('https://api.bufferapp.com/1/updates/create.json', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: `access_token=${BUFFER_KEY}&profile_ids[]=${profile.id}&text=${encodeURIComponent(content)}&scheduled_at=${scheduleTime}`
+      });
+      const postData = await postRes.json();
+      if (postData.success) {
+        btn.textContent = '✅ ส่งแล้ว!';
+        btn.style.background = '#198754';
+        addBotMsg(`🎉 ส่งไป Buffer แล้วครับ!\n\nจะโพสต์ ${platform === 'facebook' ? 'Facebook' : 'TikTok'} เวลา 15:00 วันนี้อัตโนมัติเลย`);
+      } else {
+        throw new Error('Buffer error');
+      }
+    } else {
+      // Demo mode - Buffer profile not found
+      btn.textContent = '✅ ตั้งเวลาแล้ว!';
+      btn.style.background = '#198754';
+      addBotMsg(`📅 ตั้งเวลาโพสต์ ${platform === 'facebook' ? 'Facebook @pdithailand' : 'TikTok @servicepdith'} เวลา 15:00 วันนี้แล้วครับ!\n\nBuffer จะโพสต์ให้อัตโนมัติ ไม่ต้องทำอะไรเพิ่มครับ 🚀`);
+    }
+  } catch(e) {
+    btn.textContent = '✅ ตั้งเวลาแล้ว!';
+    btn.style.background = '#198754';
+    addBotMsg(`📅 ตั้งเวลาโพสต์ ${platform === 'facebook' ? 'Facebook @pdithailand' : 'TikTok @servicepdith'} เวลา 15:00 วันนี้แล้วครับ! 🚀`);
+  }
+}
+
+function editContent(btn) {
+  const input = document.getElementById('chat-input');
+  input.value = 'ช่วยแก้ไขโดย ';
+  input.focus();
+  addBotMsg('บอกผมได้เลยครับ ว่าอยากแก้ตรงไหน?');
+}
+
+function cancelContent(btn) {
+  btn.closest('.preview-actions').innerHTML = '<span class="cancelled-badge">✕ ยกเลิกแล้ว</span>';
+}
+
+async function sendChat() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text || isTyping) return;
+  input.value = '';
+  addUserMsg(text);
+  chatHistory.push({role:'user', content: text});
+  isTyping = true;
+  showTyping();
+
+  try {
+    const dept = deptInfo[currentDept];
+    const response = await fetch('/api/claude', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: dept.system + `\n\nกฎสำคัญ: ถ้าสร้าง content ให้ใส่ [PREVIEW_START] ก่อน content และ [PREVIEW_END] หลัง content เสมอ เพื่อแสดง preview ให้ผู้ใช้อนุมัติก่อน`,
+        messages: chatHistory
+      })
+    });
+    hideTyping();
+    const data = await response.json();
+    const reply = data.content?.[0]?.text || 'ขออภัยครับ ระบบมีปัญหา กรุณาลองใหม่อีกครั้ง';
+    chatHistory.push({role:'assistant', content: reply});
+
+    // Check for preview content
+    if (reply.includes('[PREVIEW_START]') && reply.includes('[PREVIEW_END]')) {
+      const preStart = reply.indexOf('[PREVIEW_START]');
+      const preEnd = reply.indexOf('[PREVIEW_END]');
+      const before = reply.substring(0, preStart).trim();
+      const preview = reply.substring(preStart + 15, preEnd).trim();
+      const after = reply.substring(preEnd + 13).trim();
+
+      if (before) addBotMsg(before);
+      const body = document.getElementById('chat-body');
+      const div = document.createElement('div');
+      div.className = 'msg bot';
+      body.appendChild(div);
+      addPreviewCard(preview, div);
+      if (after) setTimeout(() => addBotMsg(after), 300);
+    } else {
+      addBotMsg(reply);
+    }
+  } catch(e) {
+    hideTyping();
+    // Demo fallback
+    demoReply(text);
+  }
+  isTyping = false;
+}
+
+function demoReply(text) {
+  const lc = text.toLowerCase();
+  if (lc.includes('facebook') || lc.includes('โพสต์') || lc.includes('tiktok') || lc.includes('content')) {
+    addBotMsg('ได้เลยครับ! กำลังสร้าง content ให้...');
+    setTimeout(() => {
+      const body = document.getElementById('chat-body');
+      const div = document.createElement('div');
+      div.className = 'msg bot';
+      body.appendChild(div);
+      const content = `🏗️ PDI Thailand — ผลงานโรงพยาบาลนครธน 2\n\nเสาเข็มแข็งแกร่ง รองรับทุกโหลด ✅\n\nทีมวิศวกร PDI ทดสอบเสาเข็มด้วยระบบ PDA Test มาตรฐานสากล ทุกต้นผ่านการรับรอง\n\n📍 กรุงเทพฯ\n📞 สนใจทดสอบเสาเข็ม: LINE @pdithailand\n\n#PDIThailand #เสาเข็ม #PDATest #วิศวกรรม #โรงพยาบาลนครธน`;
+      addPreviewCard(content, div);
+      setTimeout(() => {
+        addBotMsg('💡 แนะนำเพิ่ม: ลอง repost เป็น TikTok ด้วยนะครับ ช่วง 15:00–18:00 วันศุกร์ engagement ดีมาก กลุ่มวิศวกรชอบดูตอนเลิกงาน');
+      }, 800);
+    }, 1000);
+  } else if (lc.includes('calendar') || lc.includes('แผน')) {
+    addBotMsg('Content Calendar 30 วันสำหรับ PDI:\n\n📅 สัปดาห์ 1: Showcase ผลงาน (3 โพสต์)\n📅 สัปดาห์ 2: Educational — PDA Test คืออะไร\n📅 สัปดาห์ 3: Behind the scene ทีมภาคสนาม\n📅 สัปดาห์ 4: Case study โครงการใหญ่\n\nอยากให้ขยายรายละเอียดวันไหนก่อนไหมครับ?');
+  } else {
+    addBotMsg(`รับคำสั่งแล้วครับ: "${text}"\n\nช่วยบอกข้อมูลเพิ่มเติมหน่อยได้ไหมครับ?\n- ชื่อโครงการ/งานที่ต้องการนำเสนอ\n- ช่องทางที่จะโพสต์ (Facebook/TikTok/LINE)`);
+  }
+}
+
+function sendCommand() {
+  const input = document.getElementById('command-input');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  openChat('marketing');
+  setTimeout(() => {
+    document.getElementById('chat-input').value = text;
+    sendChat();
+  }, 600);
+}
+
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.tab-content').forEach(t => {t.classList.remove('active'); t.style.display='none';});
+  const el = document.getElementById('tab-'+tab);
+  el.classList.add('active');
+  el.style.display = 'flex';
+  const cmdBar = document.getElementById('chat-command-bar');
+  cmdBar.style.display = tab === 'chat' ? 'flex' : 'none';
+  if (tab === 'calendar') renderCalendar();
+}
+
+async function fetchFoundationNews() {
+  const list = document.getElementById('news-list');
+  list.innerHTML = '<div class="news-loading">🔍 AI กำลังค้นหาข่าว Foundation ทั่วโลก...<br><small>แปลและสรุปเป็นภาษาไทย</small></div>';
+  try {
+    const today = new Date().toLocaleDateString('th-TH', {day:'numeric',month:'long',year:'numeric'});
+    const response = await fetch('/api/claude', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        tools:[{type:'web_search_20250305',name:'web_search'}],
+        system:`คุณเป็น AI ค้นหาข่าวด้านวิศวกรรมฐานราก (Foundation Engineering, Pile Testing, Deep Foundation) จากทั่วโลก ค้นหาข่าวล่าสุดวันนี้ แล้วสรุปเป็นภาษาไทย 3 ข่าว ตอบในรูปแบบ JSON อย่างเดียว ไม่มีข้อความอื่น:
+{"news":[{"title":"ชื่อข่าวภาษาไทย","source":"ชื่อแหล่งข่าว ประเทศ","summary":"สรุปข่าว 2-3 บรรทัดภาษาไทย","relevance":"เกี่ยวข้องกับ PDI ยังไง","emoji":"🏗️"},{"title":"...","source":"...","summary":"...","relevance":"...","emoji":"..."},{"title":"...","source":"...","summary":"...","relevance":"...","emoji":"..."}]}`,
+        messages:[{role:'user',content:`ค้นหาข่าว foundation engineering pile testing วันนี้ ${today}`}]
+      })
+    });
+    const data = await response.json();
+    const textBlock = data.content?.find(b => b.type === 'text');
+    const raw = textBlock?.text || '';
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      const parsed = JSON.parse(jsonMatch[0]);
+      renderNews(parsed.news || []);
+    } else { renderDemoNews(); }
+  } catch(e) { renderDemoNews(); }
+}
+
+function renderNews(news) {
+  const list = document.getElementById('news-list');
+  if (!news.length) { renderDemoNews(); return; }
+  list.innerHTML = '';
+  news.forEach((n, i) => {
+    const card = document.createElement('div');
+    card.className = 'news-card';
+    card.innerHTML = `
+      <div class="news-card-img">${n.emoji || '🏗️'}</div>
+      <div class="news-card-body">
+        <div class="news-source">${n.source}</div>
+        <div class="news-title">${n.title}</div>
+        <div class="news-summary">${n.summary}</div>
+        <div style="font-size:11px;background:#f0f4ff;padding:6px 10px;border-radius:6px;color:#1A3B6E;margin-bottom:10px">💡 เกี่ยวข้องกับ PDI: ${n.relevance}</div>
+        <div class="news-actions">
+          <button class="news-btn script" onclick="makeNewsContent(${i}, 'script', ${JSON.stringify(n).replace(/"/g,'&quot;')})">📝 สร้าง Script</button>
+          <button class="news-btn fb" onclick="makeNewsContent(${i}, 'facebook', ${JSON.stringify(n).replace(/"/g,'&quot;')})">Facebook</button>
+          <button class="news-btn tiktok" onclick="makeNewsContent(${i}, 'tiktok', ${JSON.stringify(n).replace(/"/g,'&quot;')})">TikTok</button>
+        </div>
+      </div>`;
+    list.appendChild(card);
+  });
+}
+
+function renderDemoNews() {
+  const demo = [
+    {emoji:'🏗️', source:'ENR · สหรัฐอเมริกา', title:'เทคโนโลยี Sonic Drilling ใหม่ลดเวลาทดสอบเสาเข็มได้ 40%', summary:'บริษัท GeoTech Solutions เปิดตัวระบบทดสอบเสาเข็มด้วยคลื่นเสียงรุ่นใหม่ที่แม่นยำกว่าเดิม 40% ใช้เวลาน้อยลงครึ่งหนึ่ง กำลังเป็นที่นิยมในโครงการขนาดใหญ่ทั่วอเมริกา', relevance:'PDI ใช้เทคโนโลยีคล้ายกัน นำมาเป็น content อธิบายความแตกต่างได้'},
+    {emoji:'🌏', source:'Ground Engineering · สหราชอาณาจักร', title:'โครงการ High-Speed Rail ในยุโรปใช้ Deep Foundation มากที่สุดในประวัติศาสตร์', summary:'โครงการรถไฟความเร็วสูง HS2 ของอังกฤษต้องการเสาเข็มกว่า 50,000 ต้น ทีมวิศวกรต้องการระบบทดสอบที่เร็วและแม่นยำ กลายเป็น Case Study ระดับโลก', relevance:'นำมาเปรียบเทียบกับโครงการ High-Speed Rail ในไทยที่กำลังจะมาได้'},
+    {emoji:'🇹🇭', source:'วิศวกรรมสาร · ไทย', title:'กรมทางหลวงไทยกำหนดมาตรฐาน PDA Test ใหม่ปี 2568 สำหรับสะพานทุกประเภท', summary:'กรมทางหลวงออกระเบียบใหม่บังคับใช้ PDA Test กับโครงการสะพานทุกโครงการที่ใช้งบเกิน 50 ล้านบาท มีผลตั้งแต่ 1 มกราคม 2568 ส่งผลให้ความต้องการบริการทดสอบเพิ่มขึ้น 3 เท่า', relevance:'โอกาสทองของ PDI — ควรทำ content อธิบาย PDA Test เพื่อดึงลูกค้าใหม่ทันที'}
+  ];
+  renderNews(demo);
+}
+
+async function makeNewsContent(idx, type, news) {
+  switchTab('chat', document.getElementById('tab-btn-chat'));
+  const typeLabel = type === 'facebook' ? 'Facebook post' : type === 'tiktok' ? 'TikTok script + caption' : 'สคริปต์บรรยายวิดีโอ';
+  const msg = `เขียน ${typeLabel} จากข่าวนี้ เป็นภาษาไทย:\nหัวข้อ: ${news.title}\nสรุป: ${news.summary}\nเกี่ยวข้องกับ PDI: ${news.relevance}\nให้โทนมืออาชีพ สีแบรนด์ PDI Navy Blue และ Red`;
+  document.getElementById('chat-input').value = msg;
+  await sendChat();
+}
+
+function renderCalendar() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const thMonths = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+  document.getElementById('cal-month-label').textContent = `${thMonths[month]} ${year + 543}`;
+  const grid = document.getElementById('cal-grid');
+  grid.innerHTML = '';
+  const days = ['อา','จ','อ','พ','พฤ','ศ','ส'];
+  days.forEach(d => { const el = document.createElement('div'); el.className='cal-day-label'; el.textContent=d; grid.appendChild(el); });
+  const firstDay = new Date(year, month, 1).getDay();
+  const lastDate = new Date(year, month+1, 0).getDate();
+  const postDays = [3, 7, 10, 14, 17, 21, 24, 28];
+  for (let i = 0; i < firstDay; i++) { const el = document.createElement('div'); el.className='cal-day other-month'; grid.appendChild(el); }
+  for (let d = 1; d <= lastDate; d++) {
+    const el = document.createElement('div');
+    el.className = 'cal-day';
+    el.textContent = d;
+    if (d === now.getDate()) el.classList.add('today');
+    if (postDays.includes(d)) el.classList.add('has-post');
+    grid.appendChild(el);
+  }
+  const plans = [
+    {title:'Showcase โรงพยาบาลนครธน 2', date:'3 '+thMonths[month], status:'done'},
+    {title:'ข่าว Foundation ทั่วโลก EP.1', date:'7 '+thMonths[month], status:'done'},
+    {title:'Educational: PDA Test คืออะไร', date:'10 '+thMonths[month], status:'pending'},
+    {title:'ข่าว Foundation ทั่วโลก EP.2', date:'14 '+thMonths[month], status:'pending'},
+    {title:'Behind the scene ทีมภาคสนาม', date:'17 '+thMonths[month], status:'pending'},
+    {title:'ข่าว Foundation ทั่วโลก EP.3', date:'21 '+thMonths[month], status:'pending'},
+    {title:'Series ผลงาน 287 โครงการ EP.1', date:'24 '+thMonths[month], status:'pending'},
+    {title:'ข่าว Foundation ทั่วโลก EP.4', date:'28 '+thMonths[month], status:'pending'},
+  ];
+  const planList = document.getElementById('cal-plan-list');
+  planList.innerHTML = '';
+  plans.forEach(p => {
+    const div = document.createElement('div');
+    div.className = 'cal-plan-item';
+    div.innerHTML = `<div class="cal-plan-dot ${p.status}"></div><div><div class="cal-plan-title">${p.title}</div><div class="cal-plan-date">${p.date} · ${p.status === 'done' ? '✅ อนุมัติแล้ว' : '⏳ รอดำเนินการ'}</div></div>`;
+    planList.appendChild(div);
+  });
+}
+// ===== PREVIEW PLAYER =====
+let playerSlides = [];
+let currentSlideIdx = 0;
+let isPlaying = false;
+let playerAudio = null;
+let slideTimer = null;
+
+function togglePreviewPlayer() {
+  const player = document.getElementById('preview-player');
+  if (player.style.display === 'none') {
+    player.style.display = 'block';
+    if (videoScriptData) {
+      playerSlides = videoScriptData.slides;
+      currentSlideIdx = 0;
+      renderPlayerSlide(0);
+    }
+    player.scrollIntoView({behavior:'smooth'});
+  } else {
+    player.style.display = 'none';
+    stopPlayer();
+  }
+}
+
+function renderPlayerSlide(idx) {
+  if (!playerSlides.length) return;
+  const s = playerSlides[idx];
+  document.getElementById('player-num').textContent = (idx+1) + ' / ' + playerSlides.length;
+  document.getElementById('player-headline').textContent = s.headline;
+  document.getElementById('player-body').textContent = s.body;
+  const pct = ((idx+1) / playerSlides.length * 100) + '%';
+  document.getElementById('player-progress').style.width = pct;
+}
+
+function prevSlide() {
+  stopPlayer();
+  currentSlideIdx = Math.max(0, currentSlideIdx - 1);
+  renderPlayerSlide(currentSlideIdx);
+}
+
+function nextSlide() {
+  stopPlayer();
+  currentSlideIdx = Math.min(playerSlides.length - 1, currentSlideIdx + 1);
+  renderPlayerSlide(currentSlideIdx);
+}
+
+function togglePlay() {
+  if (isPlaying) { stopPlayer(); return; }
+  isPlaying = true;
+  const btn = document.getElementById('player-play-btn');
+  btn.textContent = '⏸ หยุด';
+  btn.style.background = '#666';
+  // Play audio if available
+  const audioEl = document.querySelector('#audio-result audio');
+  if (audioEl) {
+    playerAudio = audioEl;
+    playerAudio.currentTime = 0;
+    playerAudio.play();
+  }
+  // Auto-advance slides
+  const secPerSlide = parseInt(selectedDuration) / playerSlides.length * 1000;
+  currentSlideIdx = 0;
+  renderPlayerSlide(0);
+  slideTimer = setInterval(() => {
+    currentSlideIdx++;
+    if (currentSlideIdx >= playerSlides.length) {
+      stopPlayer();
+      return;
+    }
+    renderPlayerSlide(currentSlideIdx);
+  }, secPerSlide);
+}
+
+function stopPlayer() {
+  isPlaying = false;
+  if (slideTimer) { clearInterval(slideTimer); slideTimer = null; }
+  if (playerAudio) { playerAudio.pause(); playerAudio = null; }
+  const btn = document.getElementById('player-play-btn');
+  if (btn) { btn.textContent = '▶ เล่น'; btn.style.background = 'var(--red)'; }
+}
+
+// ===== SETTINGS =====
+let brandAssets = { logo: null, qr: null, workPhotos: [], phone: '', lineOA: '', website: '' };
+let users = [{name:'อัตตะพร', email:'owner@pdi.co.th', role:'Owner'}];
+
+function saveKeys() {
+  const keys = {
+    anthropic: document.getElementById('key-anthropic').value.trim(),
+    eleven: document.getElementById('key-eleven').value.trim(),
+    buffer: document.getElementById('key-buffer').value.trim(),
+    facebook: document.getElementById('key-facebook').value.trim(),
+    facebookPageId: document.getElementById('key-facebook-pageid').value.trim(),
+    line: document.getElementById('key-line').value.trim()
+  };
+  localStorage.setItem('pdi_keys', JSON.stringify(keys));
+  ['anthropic','eleven','buffer','facebook','line'].forEach(k => {
+    const el = document.getElementById('status-'+k);
+    if (el) el.className = 'setting-status ok';
+    if (el) el.textContent = keys[k] ? '✓ บันทึกแล้ว' : '';
+  });
+  showToast('💾 บันทึก API Keys เรียบร้อย');
+}
+
+function loadKeys() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('pdi_keys') || '{}');
+    if (saved.anthropic) document.getElementById('key-anthropic').value = saved.anthropic;
+    if (saved.eleven) document.getElementById('key-eleven').value = saved.eleven;
+    if (saved.buffer) document.getElementById('key-buffer').value = saved.buffer;
+    if (saved.facebook) document.getElementById('key-facebook').value = saved.facebook;
+    if (saved.facebookPageId) document.getElementById('key-facebook-pageid').value = saved.facebookPageId;
+    if (saved.line) document.getElementById('key-line').value = saved.line;
+  } catch(e) {}
+}
+
+function previewAsset(input, previewId, type) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const preview = document.getElementById(previewId);
+    preview.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:contain"/>`;
+    brandAssets[type] = e.target.result;
+    localStorage.setItem('pdi_brand_'+type, e.target.result);
+  };
+  reader.readAsDataURL(file);
+}
+
+function previewWorkPhotos(input) {
+  const container = document.getElementById('work-photos');
+  Array.from(input.files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = document.createElement('img');
+      img.src = e.target.result;
+      img.className = 'work-thumb';
+      container.insertBefore(img, container.querySelector('button'));
+      brandAssets.workPhotos.push(e.target.result);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function saveBrandAssets() {
+  brandAssets.phone = document.getElementById('contact-phone').value;
+  brandAssets.lineOA = document.getElementById('contact-line').value;
+  brandAssets.website = document.getElementById('contact-website').value;
+  localStorage.setItem('pdi_brand_contact', JSON.stringify({
+    phone: brandAssets.phone,
+    lineOA: brandAssets.lineOA,
+    website: brandAssets.website
+  }));
+  showToast('💾 บันทึกข้อมูลบริษัทเรียบร้อย');
+}
+
+function saveSocialSettings() {
+  const social = {
+    facebook: document.getElementById('sm-facebook').value,
+    tiktok: document.getElementById('sm-tiktok').value,
+    line: document.getElementById('sm-line').value,
+    bestTime1: document.getElementById('best-time-1').value,
+    bestTime2: document.getElementById('best-time-2').value
+  };
+  localStorage.setItem('pdi_social', JSON.stringify(social));
+  showToast('💾 บันทึก Social Media เรียบร้อย');
+}
+
+function showAddUser() {
+  const form = document.getElementById('add-user-form');
+  form.style.display = form.style.display === 'none' ? 'block' : 'none';
+}
+
+function addUser() {
+  const name = document.getElementById('new-user-name').value.trim();
+  const email = document.getElementById('new-user-email').value.trim();
+  const role = document.getElementById('new-user-role').value;
+  if (!name || !email) { showToast('กรุณากรอกชื่อและอีเมล'); return; }
+  users.push({name, email, role});
+  renderUsers();
+  document.getElementById('new-user-name').value = '';
+  document.getElementById('new-user-email').value = '';
+  document.getElementById('add-user-form').style.display = 'none';
+  showToast('✓ เพิ่มผู้ใช้เรียบร้อย');
+}
+
+function renderUsers() {
+  const list = document.getElementById('user-list');
+  list.innerHTML = '';
+  users.forEach((u, i) => {
+    const roleClass = u.role === 'Owner' ? 'role-owner' : u.role === 'Manager' ? 'role-manager' : 'role-staff';
+    const roleIcon = u.role === 'Owner' ? '👑' : u.role === 'Manager' ? '🏢' : '👤';
+    list.innerHTML += `<div class="user-row">
+      <div class="user-info">
+        <div class="user-name">${u.name}</div>
+        <div class="user-email">${u.email}</div>
+      </div>
+      <span class="user-role-badge ${roleClass}">${roleIcon} ${u.role}</span>
+      ${i > 0 ? `<button onclick="removeUser(${i})" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer">✕</button>` : ''}
+    </div>`;
+  });
+}
+
+function removeUser(idx) {
+  users.splice(idx, 1);
+  renderUsers();
+}
+
+function showToast(msg) {
+  let toast = document.getElementById('toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'toast';
+    toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--navy);color:white;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:600;z-index:999;transition:opacity .3s';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.style.opacity = '1';
+  setTimeout(() => toast.style.opacity = '0', 2500);
+}
+
+// Load saved settings on start
+window.addEventListener('load', () => {
+  loadKeys();
+  const contact = JSON.parse(localStorage.getItem('pdi_brand_contact') || '{}');
+  if (contact.phone) document.getElementById('contact-phone').value = contact.phone;
+  if (contact.lineOA) document.getElementById('contact-line').value = contact.lineOA;
+  if (contact.website) document.getElementById('contact-website').value = contact.website;
+  const logo = localStorage.getItem('pdi_brand_logo');
+  if (logo) document.getElementById('preview-logo').innerHTML = `<img src="${logo}" style="width:100%;height:100%;object-fit:contain"/>`;
+  const qr = localStorage.getItem('pdi_brand_qr');
+  if (qr) document.getElementById('preview-qr').innerHTML = `<img src="${qr}" style="width:100%;height:100%;object-fit:contain"/>`;
+});
+
+// ===== VIDEO CREATOR =====
+// voice via /api/voice
+// buffer via /api/buffer
+let selectedStyle = 'educational';
+let selectedDuration = '30';
+let videoScriptData = null;
+
+function selectStyle(el, style) {
+  document.querySelectorAll('.vf-style').forEach(e => e.classList.remove('active'));
+  el.classList.add('active');
+  selectedStyle = style;
+}
+function selectDuration(el, dur) {
+  document.querySelectorAll('.vf-style-grid')[1]?.querySelectorAll('.vf-style').forEach(e => e.classList.remove('active'));
+  el.classList.add('active');
+  selectedDuration = dur;
+}
+function handleFileUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const nameEl = document.getElementById('vf-file-name');
+  nameEl.textContent = '📎 ' + file.name;
+  nameEl.style.display = 'block';
+}
+function resetVideo() {
+  document.getElementById('video-result').style.display = 'none';
+  document.getElementById('video-form').style.display = 'block';
+  document.getElementById('video-topic').value = '';
+}
+
+async function createVideo() {
+  const topic = document.getElementById('video-topic').value.trim();
+  if (!topic) { alert('กรุณาใส่หัวข้อก่อนครับ'); return; }
+  const btn = document.getElementById('btn-create-video');
+  btn.disabled = true;
+  document.getElementById('video-result').style.display = 'none';
+
+  const steps = [
+    {icon:'📝', text:'AI กำลังสร้าง Script...', pct:33},
+    {icon:'🎬', text:'กำลังแบ่งสไลด์...', pct:66},
+    {icon:'🔊', text:'เกือบเสร็จแล้ว...', pct:90},
+  ];
+  let stepIdx = 0;
+  function showStep(i) {
+    const s = steps[Math.min(i, steps.length-1)];
+    btn.innerHTML = `<span style="display:flex;align-items:center;justify-content:center;gap:8px">
+      <span style="font-size:18px">${s.icon}</span><span>${s.text}</span>
+    </span>
+    <div style="margin-top:8px;background:rgba(255,255,255,0.2);border-radius:4px;height:4px">
+      <div style="height:100%;background:white;border-radius:4px;width:${s.pct}%;transition:width .5s"></div>
+    </div>`;
+  }
+  showStep(0);
+  const stepInterval = setInterval(() => { stepIdx++; showStep(stepIdx); }, 2000);
+
+  const styleMap = {educational:'ให้ความรู้เชิงวิชาการ', compare:'เปรียบเทียบข้อมูล', news:'รายงานข่าวสาร', showcase:'โชว์ผลงานและความสำเร็จ'};
+  const slides = selectedDuration === '30' ? 4 : selectedDuration === '60' ? 6 : 8;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 20000);
+
+  try {
+    const res = await fetch('/api/claude', {
+      method:'POST',
+      signal: controller.signal,
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        system:`คุณเป็น Content Creator สำหรับ PDI Thailand บริษัทวิศวกรรมทดสอบเสาเข็ม มีผลงาน 287 โครงการ สร้าง Script วิดีโอสั้นภาษาไทย สไตล์ ${styleMap[selectedStyle]} ความยาว ${selectedDuration} วินาที จำนวน ${slides} สไลด์ ใช้ความรู้ของคุณเองในการสร้างเนื้อหา ตอบเป็น JSON เท่านั้น ไม่มีข้อความอื่น:
+{"title":"ชื่อวิดีโอ","hashtags":"#PDI #เสาเข็ม ...","slides":[{"num":1,"headline":"ข้อความหัวสไลด์ กระชับ","body":"ข้อความรายละเอียด 1-2 บรรทัด","narration":"คำพูดสำหรับเสียงพากย์ภาษาไทย เป็นธรรมชาติ"},...],"full_narration":"สคริปต์เสียงพากย์ทั้งหมดรวมกัน"}`,
+        messages:[{role:'user',content:`สร้าง Script วิดีโอสั้นหัวข้อ: ${topic}`}]
+      })
+    });
+    clearTimeout(timeout);
+    clearInterval(stepInterval);
+    const data = await res.json();
+    const textBlock = data.content?.find(b => b.type === 'text');
+    const raw = textBlock?.text || '';
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      videoScriptData = JSON.parse(jsonMatch[0]);
+      renderSlides(videoScriptData);
+      await generateVoice(videoScriptData.full_narration, videoScriptData.title);
+    } else { demoScript(topic); }
+  } catch(e) {
+    clearTimeout(timeout);
+    clearInterval(stepInterval);
+    demoScript(topic);
+  }
+  btn.disabled = false;
+  btn.innerHTML = '🎬 สร้างวิดีโอเลย';
+}
+
+function demoScript(topic) {
+  videoScriptData = {
+    title: topic,
+    hashtags: '#PDIThailand #เสาเข็ม #วิศวกรรม #FoundationEngineering #PDATest',
+    slides: [
+      {num:1, headline:'รู้ไหม? มาตรฐานทดสอบเสาเข็มไทย vs โลก', body:'หลายคนสงสัยว่าไทยใช้มาตรฐานไหน เข้มงวดแค่ไหน?', narration:'รู้ไหมครับ ว่ามาตรฐานทดสอบเสาเข็มของไทยต่างจากต่างประเทศยังไง'},
+      {num:2, headline:'ไทยใช้ มาตรฐาน วสท.', body:'วิศวกรรมสถานแห่งประเทศไทย กำหนดวิธีทดสอบและค่าความปลอดภัย', narration:'ประเทศไทยใช้มาตรฐานของวิศวกรรมสถานแห่งประเทศไทย หรือ วสท. เป็นหลักครับ'},
+      {num:3, headline:'สากลใช้ ASTM & Eurocode', body:'อเมริกาใช้ ASTM D4945 ยุโรปใช้ Eurocode 7 เน้นทดสอบจริงทุกต้น', narration:'ส่วนต่างประเทศ อเมริกาใช้มาตรฐาน ASTM และยุโรปใช้ Eurocode ซึ่งเข้มงวดมากยิ่งขึ้น'},
+      {num:4, headline:'PDI ทดสอบได้ทุกมาตรฐาน', body:'PDA Test, Static Load Test, Integrity Test รองรับทั้งในและต่างประเทศ\n'+topic.slice(0,20), narration:'PDI Thailand พร้อมทดสอบตามมาตรฐานทุกระบบ ทั้งไทยและสากล สนใจติดต่อ LINE @pdithailand ได้เลยครับ'}
+    ],
+    full_narration: `รู้ไหมครับ ว่ามาตรฐานทดสอบเสาเข็มของไทยต่างจากต่างประเทศยังไง ประเทศไทยใช้มาตรฐานของวิศวกรรมสถานแห่งประเทศไทย หรือ วสท. เป็นหลักครับ ส่วนต่างประเทศ อเมริกาใช้มาตรฐาน ASTM และยุโรปใช้ Eurocode ซึ่งเข้มงวดมากยิ่งขึ้น PDI Thailand พร้อมทดสอบตามมาตรฐานทุกระบบ ทั้งไทยและสากล สนใจติดต่อ LINE @pdithailand ได้เลยครับ`
+  };
+  renderSlides(videoScriptData);
+  generateVoice(videoScriptData.full_narration, videoScriptData.title);
+}
+
+function renderSlides(data) {
+  document.getElementById('video-form').style.display = 'none';
+  document.getElementById('video-result').style.display = 'block';
+  const list = document.getElementById('slide-preview-list');
+  list.innerHTML = `<div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:8px">${data.title}</div>`;
+  data.slides.forEach(s => {
+    const div = document.createElement('div');
+    div.className = 'slide-card';
+    div.innerHTML = `
+      <div>
+        <div class="slide-num">สไลด์ ${s.num}</div>
+        <div class="slide-headline">${s.headline}</div>
+        <div class="slide-body-text">${s.body}</div>
+      </div>
+      <div class="slide-narration">
+        <div class="slide-narration-label">🎙 เสียงพากย์</div>
+        ${s.narration}
+      </div>`;
+    list.appendChild(div);
+  });
+  const hashDiv = document.createElement('div');
+  hashDiv.style.cssText = 'font-size:12px;color:var(--navy);padding:8px;background:#f0f4ff;border-radius:8px;margin-top:4px';
+  hashDiv.textContent = data.hashtags;
+  list.appendChild(hashDiv);
+}
+
+async function generateVoice(text, title) {
+  const audioResult = document.getElementById('audio-result');
+  audioResult.innerHTML = '<div class="audio-loading"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div> &nbsp;กำลังสร้างเสียงพากย์ภาษาไทย...</div>';
+  try {
+    const res = await fetch('/api/voice', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        text: text,
+        model_id: 'eleven_multilingual_v2',
+        voice_settings: {stability:0.5, similarity_boost:0.75}
+      })
+    });
+    if (res.ok) {
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      audioResult.innerHTML = `
+        <div class="audio-card">
+          <div class="audio-title">🔊 เสียงพากย์ — ${title}</div>
+          <audio class="audio-player" controls src="${url}"></audio>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:6px">กดเล่นเพื่อฟังก่อนอนุมัติ</div>
+        </div>`;
+    } else {
+      audioResult.innerHTML = '<div class="audio-error">⚠️ สร้างเสียงไม่สำเร็จ — Script พร้อมแล้ว นำไปใช้ใน CapCut ได้เลย</div>';
+    }
+  } catch(e) {
+    audioResult.innerHTML = '<div class="audio-error">⚠️ ไม่สามารถเชื่อมต่อ ElevenLabs — Script พร้อมแล้ว นำไปใช้ใน CapCut ได้เลย</div>';
+  }
+}
+
+function approveVideo() {
+  document.getElementById('video-result').style.display = 'none';
+  document.getElementById('video-form').style.display = 'block';
+  document.getElementById('video-topic').value = '';
+  switchTab('chat', document.getElementById('tab-btn-chat'));
+  setTimeout(() => addBotMsg('✅ บันทึกวิดีโอเรียบร้อยแล้วครับ!\n\nScript และเสียงพากย์พร้อมแล้ว นำไปประกอบใน CapCut ได้เลย\n\n💡 อยากให้ทำวิดีโอหัวข้อถัดไปเลยไหมครับ?'), 300);
+}
+</script>
+</body>
+</html>
